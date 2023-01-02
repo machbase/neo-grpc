@@ -3,7 +3,7 @@ module github.com/machbase/neo-grpc
 go 1.19
 
 require (
-	github.com/machbase/dbms-mach-go v0.0.0-20221229051259-0cfeb4e31f9b
+	github.com/machbase/neo-engine v0.0.0-20230102010606-c06d63226686
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1

@@ -7,8 +7,8 @@ import (
 	"net"
 	"time"
 
-	"github.com/machbase/dbms-mach-go/pbconv"
-	"github.com/machbase/dbms-mach-go/valconv"
+	"github.com/machbase/neo-engine/pbconv"
+	"github.com/machbase/neo-engine/valconv"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )

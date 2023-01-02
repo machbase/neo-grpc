@@ -1,4 +1,4 @@
-module github.com/machbase/neo-rpc
+module github.com/machbase/neo-grpc
 
 go 1.19
 

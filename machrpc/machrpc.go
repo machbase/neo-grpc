@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/machbase/neo-engine/pbconv"
 	"github.com/machbase/neo-engine/valconv"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -70,7 +69,7 @@ func (client *Client) Exec(sqlText string, params ...any) error {
 }
 
 func (client *Client) ExecContext(ctx context.Context, sqlText string, params ...any) error {
-	pbparams, err := pbconv.ConvertAnyToPb(params)
+	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return err
 	}
@@ -95,7 +94,7 @@ func (client *Client) Query(sqlText string, params ...any) (*Rows, error) {
 }
 
 func (client *Client) QueryContext(ctx context.Context, sqlText string, params ...any) (*Rows, error) {
-	pbparams, err := pbconv.ConvertAnyToPb(params)
+	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return nil, err
 	}
@@ -151,7 +150,7 @@ func (rows *Rows) Next() bool {
 		if rsp.HasNoRows {
 			return false
 		}
-		rows.values = pbconv.ConvertPbToAny(rsp.Values)
+		rows.values = ConvertPbToAny(rsp.Values)
 	} else {
 		if len(rsp.Reason) > 0 {
 			rows.err = errors.New(rsp.Reason)
@@ -178,7 +177,7 @@ func (client *Client) QueryRow(sqlText string, params ...any) *Row {
 }
 
 func (client *Client) QueryRowContext(ctx context.Context, sqlText string, params ...any) *Row {
-	pbparams, err := pbconv.ConvertAnyToPb(params)
+	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return &Row{success: false, err: err}
 	}
@@ -195,7 +194,7 @@ func (client *Client) QueryRowContext(ctx context.Context, sqlText string, param
 	if !rsp.Success && len(rsp.Reason) > 0 {
 		row.err = errors.New(rsp.Reason)
 	}
-	row.values = pbconv.ConvertPbToAny(rsp.Values)
+	row.values = ConvertPbToAny(rsp.Values)
 	return row
 }
 
@@ -334,7 +333,7 @@ func (appender *Appender) Append(cols ...any) error {
 		return sql.ErrTxDone
 	}
 
-	params, err := pbconv.ConvertAnyToPb(cols)
+	params, err := ConvertAnyToPb(cols)
 	if err != nil {
 		return err
 	}

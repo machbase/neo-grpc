@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package machrpc;
 
-option go_package = "github.com/machbase/dbms-mach-go/machrpc";
+option go_package = "github.com/machbase/neo-grpc/machrpc";
 
 import "google/protobuf/any.proto";
 

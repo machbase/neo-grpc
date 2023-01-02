@@ -7,7 +7,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/machbase/neo-engine/valconv"
+	mach "github.com/machbase/neo-engine"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -230,43 +230,43 @@ func scan(src []any, dst []any) error {
 		default:
 			return fmt.Errorf("column %d is %T, not compatible with %T", i, v, dst[i])
 		case *int:
-			err = valconv.Int32ToAny(int32(*v), dst[i], &isNull)
+			err = mach.ScanInt32(int32(*v), dst[i], &isNull)
 		case *int16:
-			err = valconv.Int16ToAny(*v, dst[i], &isNull)
+			err = mach.ScanInt16(*v, dst[i], &isNull)
 		case *int32:
-			err = valconv.Int32ToAny(*v, dst[i], &isNull)
+			err = mach.ScanInt32(*v, dst[i], &isNull)
 		case *int64:
-			err = valconv.Int64ToAny(*v, dst[i], &isNull)
+			err = mach.ScanInt64(*v, dst[i], &isNull)
 		case *time.Time:
-			err = valconv.DateTimeToAny(*v, dst[i])
+			err = mach.ScanDateTime(*v, dst[i])
 		case *float32:
-			err = valconv.Float32ToAny(*v, dst[i])
+			err = mach.ScanFloat32(*v, dst[i])
 		case *float64:
-			err = valconv.Float64ToAny(*v, dst[i])
+			err = mach.ScanFloat64(*v, dst[i])
 		case *net.IP:
-			err = valconv.IPToAny(*v, dst[i])
+			err = mach.ScanIP(*v, dst[i])
 		case *string:
-			err = valconv.StringToAny(*v, dst[i], &isNull)
+			err = mach.ScanString(*v, dst[i], &isNull)
 		case []byte:
-			err = valconv.BytesToAny(v, dst[i])
+			err = mach.ScanBytes(v, dst[i])
 		case int:
-			err = valconv.Int32ToAny(int32(v), dst[i], &isNull)
+			err = mach.ScanInt32(int32(v), dst[i], &isNull)
 		case int16:
-			err = valconv.Int16ToAny(v, dst[i], &isNull)
+			err = mach.ScanInt16(v, dst[i], &isNull)
 		case int32:
-			err = valconv.Int32ToAny(v, dst[i], &isNull)
+			err = mach.ScanInt32(v, dst[i], &isNull)
 		case int64:
-			err = valconv.Int64ToAny(v, dst[i], &isNull)
+			err = mach.ScanInt64(v, dst[i], &isNull)
 		case time.Time:
-			err = valconv.DateTimeToAny(v, dst[i])
+			err = mach.ScanDateTime(v, dst[i])
 		case float32:
-			err = valconv.Float32ToAny(v, dst[i])
+			err = mach.ScanFloat32(v, dst[i])
 		case float64:
-			err = valconv.Float64ToAny(v, dst[i])
+			err = mach.ScanFloat64(v, dst[i])
 		case net.IP:
-			err = valconv.IPToAny(v, dst[i])
+			err = mach.ScanIP(v, dst[i])
 		case string:
-			err = valconv.StringToAny(v, dst[i], &isNull)
+			err = mach.ScanString(v, dst[i], &isNull)
 		}
 		if err != nil {
 			return err

@@ -224,19 +224,22 @@ func scan(src []any, dst []any) error {
 		if i >= len(src) {
 			return fmt.Errorf("column %d is out of range %d", i, len(src))
 		}
+		if src[i] == nil {
+			dst[i] = nil
+			continue
+		}
 		var err error
-		var isNull bool
 		switch v := src[i].(type) {
 		default:
 			return fmt.Errorf("column %d is %T, not compatible with %T", i, v, dst[i])
 		case *int:
-			err = mach.ScanInt32(int32(*v), dst[i], &isNull)
+			err = mach.ScanInt32(int32(*v), dst[i])
 		case *int16:
-			err = mach.ScanInt16(*v, dst[i], &isNull)
+			err = mach.ScanInt16(*v, dst[i])
 		case *int32:
-			err = mach.ScanInt32(*v, dst[i], &isNull)
+			err = mach.ScanInt32(*v, dst[i])
 		case *int64:
-			err = mach.ScanInt64(*v, dst[i], &isNull)
+			err = mach.ScanInt64(*v, dst[i])
 		case *time.Time:
 			err = mach.ScanDateTime(*v, dst[i])
 		case *float32:
@@ -246,17 +249,17 @@ func scan(src []any, dst []any) error {
 		case *net.IP:
 			err = mach.ScanIP(*v, dst[i])
 		case *string:
-			err = mach.ScanString(*v, dst[i], &isNull)
+			err = mach.ScanString(*v, dst[i])
 		case []byte:
 			err = mach.ScanBytes(v, dst[i])
 		case int:
-			err = mach.ScanInt32(int32(v), dst[i], &isNull)
+			err = mach.ScanInt32(int32(v), dst[i])
 		case int16:
-			err = mach.ScanInt16(v, dst[i], &isNull)
+			err = mach.ScanInt16(v, dst[i])
 		case int32:
-			err = mach.ScanInt32(v, dst[i], &isNull)
+			err = mach.ScanInt32(v, dst[i])
 		case int64:
-			err = mach.ScanInt64(v, dst[i], &isNull)
+			err = mach.ScanInt64(v, dst[i])
 		case time.Time:
 			err = mach.ScanDateTime(v, dst[i])
 		case float32:
@@ -266,13 +269,10 @@ func scan(src []any, dst []any) error {
 		case net.IP:
 			err = mach.ScanIP(v, dst[i])
 		case string:
-			err = mach.ScanString(v, dst[i], &isNull)
+			err = mach.ScanString(v, dst[i])
 		}
 		if err != nil {
 			return err
-		}
-		if isNull {
-			dst[i] = nil
 		}
 	}
 	return nil

@@ -7,7 +7,6 @@ import (
 	"net"
 	"time"
 
-	mach "github.com/machbase/neo-engine"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -233,43 +232,43 @@ func scan(src []any, dst []any) error {
 		default:
 			return fmt.Errorf("column %d is %T, not compatible with %T", i, v, dst[i])
 		case *int:
-			err = mach.ScanInt32(int32(*v), dst[i])
+			err = ScanInt32(int32(*v), dst[i])
 		case *int16:
-			err = mach.ScanInt16(*v, dst[i])
+			err = ScanInt16(*v, dst[i])
 		case *int32:
-			err = mach.ScanInt32(*v, dst[i])
+			err = ScanInt32(*v, dst[i])
 		case *int64:
-			err = mach.ScanInt64(*v, dst[i])
+			err = ScanInt64(*v, dst[i])
 		case *time.Time:
-			err = mach.ScanDateTime(*v, dst[i])
+			err = ScanDateTime(*v, dst[i])
 		case *float32:
-			err = mach.ScanFloat32(*v, dst[i])
+			err = ScanFloat32(*v, dst[i])
 		case *float64:
-			err = mach.ScanFloat64(*v, dst[i])
+			err = ScanFloat64(*v, dst[i])
 		case *net.IP:
-			err = mach.ScanIP(*v, dst[i])
+			err = ScanIP(*v, dst[i])
 		case *string:
-			err = mach.ScanString(*v, dst[i])
+			err = ScanString(*v, dst[i])
 		case []byte:
-			err = mach.ScanBytes(v, dst[i])
+			err = ScanBytes(v, dst[i])
 		case int:
-			err = mach.ScanInt32(int32(v), dst[i])
+			err = ScanInt32(int32(v), dst[i])
 		case int16:
-			err = mach.ScanInt16(v, dst[i])
+			err = ScanInt16(v, dst[i])
 		case int32:
-			err = mach.ScanInt32(v, dst[i])
+			err = ScanInt32(v, dst[i])
 		case int64:
-			err = mach.ScanInt64(v, dst[i])
+			err = ScanInt64(v, dst[i])
 		case time.Time:
-			err = mach.ScanDateTime(v, dst[i])
+			err = ScanDateTime(v, dst[i])
 		case float32:
-			err = mach.ScanFloat32(v, dst[i])
+			err = ScanFloat32(v, dst[i])
 		case float64:
-			err = mach.ScanFloat64(v, dst[i])
+			err = ScanFloat64(v, dst[i])
 		case net.IP:
-			err = mach.ScanIP(v, dst[i])
+			err = ScanIP(v, dst[i])
 		case string:
-			err = mach.ScanString(v, dst[i])
+			err = ScanString(v, dst[i])
 		}
 		if err != nil {
 			return err

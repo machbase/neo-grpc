@@ -134,6 +134,25 @@ func (rows *Rows) Close() error {
 	return err
 }
 
+func (rows *Rows) Columns() ([]*Column, error) {
+	ctx, cancelFunc := rows.client.queryContext()
+	defer cancelFunc()
+
+	rsp, err := rows.client.cli.Columns(ctx, rows.handle)
+	if err != nil {
+		return nil, err
+	}
+	if rsp.Success {
+		return rsp.Columns, nil
+	} else {
+		if len(rsp.Reason) > 0 {
+			return nil, errors.New(rsp.Reason)
+		} else {
+			return nil, fmt.Errorf("fail to get columns info")
+		}
+	}
+}
+
 func (rows *Rows) Next() bool {
 	if rows.err != nil {
 		return false

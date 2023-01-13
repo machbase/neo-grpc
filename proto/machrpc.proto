@@ -10,6 +10,7 @@ service Machbase {
     rpc Exec(ExecRequest) returns(ExecResponse) {}
     rpc QueryRow(QueryRowRequest) returns(QueryRowResponse) {}
     rpc Query(QueryRequest) returns(QueryResponse) {}
+    rpc Columns(RowsHandle) returns (ColumnsResponse) {}
     rpc RowsFetch(RowsHandle) returns(RowsFetchResponse) {}
     rpc RowsClose(RowsHandle) returns (RowsCloseResponse) {}
     rpc Appender(AppenderRequest) returns (AppenderResponse){}
@@ -59,6 +60,20 @@ message QueryResponse {
     string reason = 2;
     string elapse = 3;
     RowsHandle rowsHandle = 4;
+}
+
+message ColumnsResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated Column columns = 4;
+}
+
+message Column {
+    string name = 1;
+    string type = 2;
+    int32 size = 3;
+    int32 length = 4;
 }
 
 message RowsHandle {

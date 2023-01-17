@@ -32,6 +32,8 @@ func NewClient(options ...ClientOption) *Client {
 			client.queryTimeout = o.timeout
 		case *closeTimeoutOption:
 			client.closeTimeout = o.timeout
+		case *appendTimeoutOption:
+			client.appendTimeout = o.timeout
 		}
 	}
 	return client

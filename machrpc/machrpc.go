@@ -313,6 +313,10 @@ func (client *Client) Appender(tableName string) (*Appender, error) {
 		return nil, errors.Wrap(err, "Appender")
 	}
 
+	if !openRsp.Success {
+		return nil, errors.New(openRsp.Reason)
+	}
+
 	appendClient, err := client.cli.Append(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "AppendClient")

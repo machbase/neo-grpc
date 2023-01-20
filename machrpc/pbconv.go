@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -50,9 +51,9 @@ func ConvertAnyToPb(params []any) ([]*anypb.Any, error) {
 		case net.IP:
 			pbparams[i], err = anypb.New(wrapperspb.String(v.String()))
 		case *time.Time:
-			pbparams[i], err = anypb.New(wrapperspb.Int64(v.UnixNano()))
+			pbparams[i], err = anypb.New(timestamppb.New(*v))
 		case time.Time:
-			pbparams[i], err = anypb.New(wrapperspb.Int64(v.UnixNano()))
+			pbparams[i], err = anypb.New(timestamppb.New(v))
 		default:
 			return nil, fmt.Errorf("unsupported params[%d] type %T", i, p)
 		}
@@ -104,6 +105,10 @@ func ConvertPbToAny(pbvals []*anypb.Any) []any {
 			var v wrapperspb.UInt64Value
 			pbval.UnmarshalTo(&v)
 			value = v.Value
+		case "type.googleapis.com/google.protobuf.Timestamp":
+			var v timestamppb.Timestamp
+			pbval.UnmarshalTo(&v)
+			value = v.AsTime()
 		case "":
 			value = nil
 		default:

@@ -104,4 +104,5 @@ message QueryRowResponse {
     string reason = 2;
     string elapse = 3;
     repeated google.protobuf.Any values = 4;
+    int64 affectedRows = 5;
 }

@@ -230,7 +230,10 @@ func (r *NeoResult) LastInsertId() (int64, error) {
 }
 
 func (r *NeoResult) RowsAffected() (int64, error) {
-	return 0, nil
+	if r.row == nil {
+		return 0, nil
+	}
+	return r.row.RowsAffected(), nil
 }
 
 type NeoRows struct {

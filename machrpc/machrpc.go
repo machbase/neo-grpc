@@ -210,6 +210,7 @@ func (client *Client) QueryRowContext(ctx context.Context, sqlText string, param
 
 	var row = &Row{}
 	row.success = rsp.Success
+	row.affectedRows = rsp.AffectedRows
 	row.err = nil
 	if !rsp.Success && len(rsp.Reason) > 0 {
 		row.err = errors.New(rsp.Reason)
@@ -222,6 +223,8 @@ type Row struct {
 	success bool
 	err     error
 	values  []any
+
+	affectedRows int64
 }
 
 func (row *Row) Err() error {
@@ -237,6 +240,10 @@ func (row *Row) Scan(cols ...any) error {
 	}
 	err := scan(row.values, cols)
 	return err
+}
+
+func (row *Row) RowsAffected() int64 {
+	return row.affectedRows
 }
 
 func scan(src []any, dst []any) error {

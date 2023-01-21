@@ -15,6 +15,7 @@ service Machbase {
     rpc RowsClose(RowsHandle) returns (RowsCloseResponse) {}
     rpc Appender(AppenderRequest) returns (AppenderResponse){}
     rpc Append(stream AppendData) returns(AppendDone) {}
+    rpc Explain(ExplainRequest) returns(ExplainResponse) {}
 }
 
 message ExecRequest {
@@ -48,6 +49,17 @@ message AppendDone {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
+}
+
+message ExplainRequest {
+    string sql = 1;
+}
+
+message ExplainResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    string plan = 4;
 }
 
 message QueryRequest {

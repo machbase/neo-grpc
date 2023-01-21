@@ -30,6 +30,7 @@ type MachbaseClient interface {
 	RowsClose(ctx context.Context, in *RowsHandle, opts ...grpc.CallOption) (*RowsCloseResponse, error)
 	Appender(ctx context.Context, in *AppenderRequest, opts ...grpc.CallOption) (*AppenderResponse, error)
 	Append(ctx context.Context, opts ...grpc.CallOption) (Machbase_AppendClient, error)
+	Explain(ctx context.Context, in *ExplainRequest, opts ...grpc.CallOption) (*ExplainResponse, error)
 }
 
 type machbaseClient struct {
@@ -137,6 +138,15 @@ func (x *machbaseAppendClient) CloseAndRecv() (*AppendDone, error) {
 	return m, nil
 }
 
+func (c *machbaseClient) Explain(ctx context.Context, in *ExplainRequest, opts ...grpc.CallOption) (*ExplainResponse, error) {
+	out := new(ExplainResponse)
+	err := c.cc.Invoke(ctx, "/machrpc.Machbase/Explain", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MachbaseServer is the server API for Machbase service.
 // All implementations must embed UnimplementedMachbaseServer
 // for forward compatibility
@@ -149,6 +159,7 @@ type MachbaseServer interface {
 	RowsClose(context.Context, *RowsHandle) (*RowsCloseResponse, error)
 	Appender(context.Context, *AppenderRequest) (*AppenderResponse, error)
 	Append(Machbase_AppendServer) error
+	Explain(context.Context, *ExplainRequest) (*ExplainResponse, error)
 	mustEmbedUnimplementedMachbaseServer()
 }
 
@@ -179,6 +190,9 @@ func (UnimplementedMachbaseServer) Appender(context.Context, *AppenderRequest) (
 }
 func (UnimplementedMachbaseServer) Append(Machbase_AppendServer) error {
 	return status.Errorf(codes.Unimplemented, "method Append not implemented")
+}
+func (UnimplementedMachbaseServer) Explain(context.Context, *ExplainRequest) (*ExplainResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Explain not implemented")
 }
 func (UnimplementedMachbaseServer) mustEmbedUnimplementedMachbaseServer() {}
 
@@ -345,6 +359,24 @@ func (x *machbaseAppendServer) Recv() (*AppendData, error) {
 	return m, nil
 }
 
+func _Machbase_Explain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExplainRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).Explain(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/machrpc.Machbase/Explain",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).Explain(ctx, req.(*ExplainRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Machbase_ServiceDesc is the grpc.ServiceDesc for Machbase service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -379,6 +411,10 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Appender",
 			Handler:    _Machbase_Appender_Handler,
+		},
+		{
+			MethodName: "Explain",
+			Handler:    _Machbase_Explain_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -54,6 +54,20 @@ func (client *Client) Disconnect() {
 	client.cli = nil
 }
 
+func (client *Client) Explain(sqlText string) (string, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &ExplainRequest{Sql: sqlText}
+	rsp, err := client.cli.Explain(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	if !rsp.Success {
+		return "", fmt.Errorf(rsp.Reason)
+	}
+	return rsp.Plan, nil
+}
+
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 	if client.queryTimeout > 0 {
 		return context.WithTimeout(context.Background(), client.queryTimeout)

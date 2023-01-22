@@ -54,6 +54,20 @@ func (client *Client) Disconnect() {
 	client.cli = nil
 }
 
+func (client *Client) GetServerInfo() (*ServerInfo, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &ServerInfoRequest{}
+	rsp, err := client.cli.GetServerInfo(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if !rsp.Success {
+		return nil, errors.New(rsp.Reason)
+	}
+	return rsp, nil
+}
+
 func (client *Client) Explain(sqlText string) (string, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()

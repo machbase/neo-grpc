@@ -62,7 +62,6 @@ message ExecResponse {
     string reason = 2;
     string elapse = 3;
     int64 affectedRows = 4;
-    string message = 5;
 }
 
 message QueryRowRequest {
@@ -88,7 +87,7 @@ message QueryResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
-    RowsHandle rowsHandle = 4;
+    RowsHandle rowsHandle = 4; // only available if stmt is fetchable
 }
 
 message ColumnsResponse {

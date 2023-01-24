@@ -135,7 +135,7 @@ func (client *Client) QueryContext(ctx context.Context, sqlText string, params .
 	}
 
 	if rsp.Success {
-		return &Rows{client: client, handle: rsp.RowsHandle}, nil
+		return &Rows{client: client, message: rsp.Reason, handle: rsp.RowsHandle}, nil
 	} else {
 		if len(rsp.Reason) > 0 {
 			return nil, errors.New(rsp.Reason)
@@ -145,10 +145,11 @@ func (client *Client) QueryContext(ctx context.Context, sqlText string, params .
 }
 
 type Rows struct {
-	client *Client
-	handle *RowsHandle
-	values []any
-	err    error
+	client  *Client
+	message string
+	handle  *RowsHandle
+	values  []any
+	err     error
 }
 
 func (rows *Rows) Close() error {
@@ -162,6 +163,14 @@ func (rows *Rows) Close() error {
 	}
 	_, err := rows.client.cli.RowsClose(ctx, rows.handle)
 	return err
+}
+
+func (rows *Rows) IsFetchable() bool {
+	return rows.handle != nil
+}
+
+func (rows *Rows) Message() string {
+	return rows.message
 }
 
 func (rows *Rows) Columns() ([]*Column, error) {

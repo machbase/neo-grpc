@@ -19,17 +19,6 @@ service Machbase {
     rpc GetServerInfo(ServerInfoRequest) returns (ServerInfo) {}
 }
 
-message ExecRequest {
-    string sql = 1;
-    repeated google.protobuf.Any params = 2;
-}
-
-message ExecResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-}
-
 message AppenderRequest {
     string tableName = 1;
 }
@@ -61,6 +50,33 @@ message ExplainResponse {
     string reason = 2;
     string elapse = 3;
     string plan = 4;
+}
+
+message ExecRequest {
+    string sql = 1;
+    repeated google.protobuf.Any params = 2;
+}
+
+message ExecResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    int64 affectedRows = 4;
+    string message = 5;
+}
+
+message QueryRowRequest {
+    string sql = 1;
+    repeated google.protobuf.Any params = 2;
+}
+
+message QueryRowResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated google.protobuf.Any values = 4;
+    int64 affectedRows = 5;
+    string message = 6;
 }
 
 message QueryRequest {
@@ -105,19 +121,6 @@ message RowsCloseResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
-}
-
-message QueryRowRequest {
-    string sql = 1;
-    repeated google.protobuf.Any params = 2;
-}
-
-message QueryRowResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-    repeated google.protobuf.Any values = 4;
-    int64 affectedRows = 5;
 }
 
 message ServerInfoRequest {

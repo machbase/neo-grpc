@@ -4,7 +4,9 @@ import (
 	context "context"
 	"database/sql"
 	"fmt"
+	"math"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -80,6 +82,140 @@ func (client *Client) Explain(sqlText string) (string, error) {
 		return "", fmt.Errorf(rsp.Reason)
 	}
 	return rsp.Plan, nil
+}
+
+type Description interface {
+	description()
+}
+
+func (td *TableDescription) description()  {}
+func (cd *ColumnDescription) description() {}
+
+type TableDescription struct {
+	Name    string               `json:"name"`
+	Type    TableType            `json:"type"`
+	Flag    int                  `json:"flag"`
+	Id      int                  `json:"id"`
+	Columns []*ColumnDescription `json:"columns"`
+}
+
+func (td *TableDescription) TypeString() string {
+	return TableTypeDescription(td.Type, td.Flag)
+}
+
+func TableTypeDescription(typ TableType, flag int) string {
+	desc := "undef"
+	switch typ {
+	case LogTableType:
+		desc = "Log Table"
+	case FixedTableType:
+		desc = "Fixed Table"
+	case VolatileTableType:
+		desc = "Volatile Table"
+	case LookupTableType:
+		desc = "Lookup Table"
+	case KeyValueTableType:
+		desc = "KeyValue Table"
+	case TagTableType:
+		desc = "Tag Table"
+	}
+	switch flag {
+	case 1:
+		desc += " (data)"
+	case 2:
+		desc += " (rollup)"
+	case 4:
+		desc += " (meta)"
+	case 8:
+		desc += " (stat)"
+	}
+	return desc
+}
+
+type ColumnDescription struct {
+	Name   string     `json:"name"`
+	Type   ColumnType `json:"type"`
+	Length int        `json:"length"`
+}
+
+func (cd *ColumnDescription) TypeString() string {
+	return ColumnTypeDescription(cd.Type)
+}
+
+func ColumnTypeDescription(typ ColumnType) string {
+	switch typ {
+	case Int16ColumnType:
+		return "int16"
+	case Uint16ColumnType:
+		return "uint16"
+	case Int32ColumnType:
+		return "int32"
+	case Uint32ColumnType:
+		return "uint32"
+	case Int64ColumnType:
+		return "int64"
+	case Uint64ColumnType:
+		return "uint64"
+	case Float32ColumnType:
+		return "float"
+	case Float64ColumnType:
+		return "double"
+	case VarcharColumnType:
+		return "varchar"
+	case TextColumnType:
+		return "text"
+	case ClobColumnType:
+		return "clob"
+	case BlobColumnType:
+		return "blob"
+	case BinaryColumnType:
+		return "binary"
+	case DatetimeColumnType:
+		return "datetime"
+	case IpV4ColumnType:
+		return "ipv4"
+	case IpV6ColumnType:
+		return "ipv6"
+	default:
+		return "undef"
+	}
+}
+
+func (client *Client) Describe(name string) (Description, error) {
+	d := &TableDescription{}
+	var tableType int
+	var colCount int
+	var colType int
+	r := client.QueryRow("select name, type, flag, id, colcount from M$SYS_TABLES where name = ?", strings.ToUpper(name))
+	if err := r.Scan(&d.Name, &tableType, &d.Flag, &d.Id, &colCount); err != nil {
+		return nil, err
+	}
+	d.Type = TableType(tableType)
+
+	rows, err := client.Query(`
+		select
+			name, type, length
+		from
+			M$SYS_COLUMNS
+		where
+			table_id = ? 
+		and ID < ?
+		order by id`, d.Id, (math.MaxUint16 - 1))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		col := &ColumnDescription{}
+		err = rows.Scan(&col.Name, &colType, &col.Length)
+		if err != nil {
+			return nil, err
+		}
+		col.Type = ColumnType(colType)
+		d.Columns = append(d.Columns, col)
+	}
+	return d, nil
 }
 
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {

@@ -4,7 +4,6 @@ import (
 	context "context"
 	"database/sql"
 	"fmt"
-	"math"
 	"net"
 	"strings"
 	"time"
@@ -133,6 +132,7 @@ func TableTypeDescription(typ TableType, flag int) string {
 }
 
 type ColumnDescription struct {
+	Id     uint64     `json:"id"`
 	Name   string     `json:"name"`
 	Type   ColumnType `json:"type"`
 	Length int        `json:"length"`
@@ -194,13 +194,12 @@ func (client *Client) Describe(name string) (Description, error) {
 
 	rows, err := client.Query(`
 		select
-			name, type, length
+			name, type, length, id
 		from
 			M$SYS_COLUMNS
 		where
 			table_id = ? 
-		and ID < ?
-		order by id`, d.Id, (math.MaxUint16 - 1))
+		order by id`, d.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +207,7 @@ func (client *Client) Describe(name string) (Description, error) {
 
 	for rows.Next() {
 		col := &ColumnDescription{}
-		err = rows.Scan(&col.Name, &colType, &col.Length)
+		err = rows.Scan(&col.Name, &colType, &col.Length, &col.Id)
 		if err != nil {
 			return nil, err
 		}

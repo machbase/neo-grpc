@@ -1,7 +1,39 @@
 
-## Settings for VSCode
+# neo-grpc
 
-<details>
+- `proto` gRPC .proto file specifies API of machbase-neo
+- `machrpc` reference implementation of gRPC client of machbase-neo with helper functions.
+- `driver` implmenetation of go sql/driver based gRPC
+
+## For Gophers
+
+### Install
+
+```
+go get -u github.com/machbase/neo-grpc
+```
+
+### How to use
+
+```go
+import "github.com/machbase/neo-grpc/machrpc"
+```
+
+```go
+cli := machrpc.NewClient(machrpc.ClientOption{machrpc.QueryTimeout(5 * time.Second)})
+if err := cli.Connect("127.0.0.1:5655"); err != nil {
+    panic(err)
+}
+defer cli.Disconnect()
+
+sqlText := "insert into example (name, time, value) values (?, ?, ?)"
+cli.Exec(sqlText, "tag-name", time.Now(), 3.1415)
+```
+
+
+## For gRPC Developers
+
+### Settings for VSCode
 
   - `.vscode/settings.json`
 
@@ -11,31 +43,21 @@
           "options": [
               "--proto_path=./proto"
           ]
-      },
-      "files.exclude": {
-          "vendor": true
-      },
-      "editor.tabSize": 4,
-      "[go]": {
-          "editor.tabSize": 4
       }
   }
   ```
 
-</details>
-
-
-## gRPC developer's info
-
-<details>
-
-## protobuf compiler
+### protobuf compiler
 
 > https://grpc.io/docs/protoc-installation/
+
+- linux
 
 ```
 sudo apt install -y protobuf-compiler
 ```
+
+- macOS
 
 ```
 brew install protobuf
@@ -47,32 +69,3 @@ brew install protobuf
 go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 ```
-
-## GRPC Gateway compiler
-
-- [grpc-gateway](https://github.com/grpc-ecosystem/grpc-gateway)
-
-```
-go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@latest
-```
-
-```
-go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@latest
-```
-
-- [grpc-gateway with gin](https://blog.logrocket.com/guide-to-grpc-gateway/#using-grpc-gateway-with-gin)
-
-### protobuf struct from/to json
-
-```go
-  buf, _ := ioutil.ReadAll(c.Request.Body)
-  req := &protos.LoginRequest{}
-  protojson.Unmarshal(buf, req)
-
-  rsp, _ := s.Login(context.Background(), req)
-  buf, _ = protojson.Marshal(rsp)
-
-  c.Data(http.StatusOK, gin.MIMEJSON, buf)
-```
-
-</details>

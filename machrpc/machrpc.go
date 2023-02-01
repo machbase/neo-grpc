@@ -181,7 +181,7 @@ func ColumnTypeDescription(typ ColumnType) string {
 	}
 }
 
-func (client *Client) Describe(name string) (Description, error) {
+func (client *Client) Describe(name string, includeHiddenColumns bool) (Description, error) {
 	d := &TableDescription{}
 	var tableType int
 	var colCount int
@@ -210,6 +210,9 @@ func (client *Client) Describe(name string) (Description, error) {
 		err = rows.Scan(&col.Name, &colType, &col.Length, &col.Id)
 		if err != nil {
 			return nil, err
+		}
+		if !includeHiddenColumns && strings.HasPrefix(col.Name, "_") {
+			continue
 		}
 		col.Type = ColumnType(colType)
 		d.Columns = append(d.Columns, col)

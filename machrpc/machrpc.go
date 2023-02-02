@@ -1,3 +1,5 @@
+// package machrpc is a refrence implementation of client
+// that interwork with machbase-neo server via gRPC.
 package machrpc
 
 import (
@@ -12,6 +14,9 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Client is a convenient data type represents client side of machbase-neo.
+//
+//	client := machrpc.NewClient()
 type Client struct {
 	conn grpc.ClientConnInterface
 	cli  MachbaseClient
@@ -21,6 +26,7 @@ type Client struct {
 	appendTimeout time.Duration
 }
 
+// NewClient creates new instance of Client.
 func NewClient(options ...ClientOption) *Client {
 	client := &Client{
 		closeTimeout:  3 * time.Second,
@@ -40,6 +46,10 @@ func NewClient(options ...ClientOption) *Client {
 	return client
 }
 
+// Connect make a connection to the server with the given address.
+//
+// serverAddr can be tcp://ipaddr:port or unix://path.
+// The path of unix domain socket can be absolute/releative path.
 func (client *Client) Connect(serverAddr string) error {
 	conn, err := MakeGrpcConn(serverAddr)
 	if err != nil {
@@ -50,11 +60,13 @@ func (client *Client) Connect(serverAddr string) error {
 	return nil
 }
 
+// Disconnect release connection to the server.
 func (client *Client) Disconnect() {
 	client.conn = nil
 	client.cli = nil
 }
 
+// GetServerInfo invoke gRPC call to get ServerInfo
 func (client *Client) GetServerInfo() (*ServerInfo, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
@@ -69,6 +81,7 @@ func (client *Client) GetServerInfo() (*ServerInfo, error) {
 	return rsp, nil
 }
 
+// Explain retrieve execution plan of the given SQL statement.
 func (client *Client) Explain(sqlText string) (string, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
@@ -90,6 +103,7 @@ type Description interface {
 func (td *TableDescription) description()  {}
 func (cd *ColumnDescription) description() {}
 
+// TableDescription is represents data that comes as a result of 'desc <table>'
 type TableDescription struct {
 	Name    string               `json:"name"`
 	Type    TableType            `json:"type"`
@@ -98,10 +112,12 @@ type TableDescription struct {
 	Columns []*ColumnDescription `json:"columns"`
 }
 
+// TypeString returns string representation of table type.
 func (td *TableDescription) TypeString() string {
 	return TableTypeDescription(td.Type, td.Flag)
 }
 
+// TableTypeDescription converts the given TableType and flag into string representation.
 func TableTypeDescription(typ TableType, flag int) string {
 	desc := "undef"
 	switch typ {
@@ -131,6 +147,7 @@ func TableTypeDescription(typ TableType, flag int) string {
 	return desc
 }
 
+// columnDescription represents information of a column info.
 type ColumnDescription struct {
 	Id     uint64     `json:"id"`
 	Name   string     `json:"name"`
@@ -138,10 +155,12 @@ type ColumnDescription struct {
 	Length int        `json:"length"`
 }
 
+// TypeString returns string representation of column type.
 func (cd *ColumnDescription) TypeString() string {
 	return ColumnTypeDescription(cd.Type)
 }
 
+// ColumnTypeDescription converts ColumnType into string.
 func ColumnTypeDescription(typ ColumnType) string {
 	switch typ {
 	case Int16ColumnType:
@@ -181,6 +200,10 @@ func ColumnTypeDescription(typ ColumnType) string {
 	}
 }
 
+// Describe retrieves the result of 'desc table'.
+//
+// If includeHiddenColumns is true, the result includes hidden columns those name start with '_'
+// such as "_RID" and "_ARRIVAL_TIME".
 func (client *Client) Describe(name string, includeHiddenColumns bool) (Description, error) {
 	d := &TableDescription{}
 	var tableType int
@@ -229,12 +252,16 @@ func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 	}
 }
 
+// Exec executes SQL statements that does not return result
+// like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
 func (client *Client) Exec(sqlText string, params ...any) error {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	return client.ExecContext(ctx, sqlText, params...)
 }
 
+// Exec executes SQL statements that does not return result
+// like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
 func (client *Client) ExecContext(ctx context.Context, sqlText string, params ...any) error {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
@@ -254,12 +281,35 @@ func (client *Client) ExecContext(ctx context.Context, sqlText string, params ..
 	return nil
 }
 
+// Query executes SQL statements that are expected multipe rows as result.
+// Commonly used to execute 'SELECT * FROM <TABLE>'
+//
+// *Rows that returns by Query() must be closed to prevent leaks.
+//
+//	rows, err := client.Query("select * from my_table where name = ?", "my_name")
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer rows.Close()
 func (client *Client) Query(sqlText string, params ...any) (*Rows, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	return client.QueryContext(ctx, sqlText, params...)
 }
 
+// Query executes SQL statements that are expected multipe rows as result.
+// Commonly used to execute 'SELECT * FROM <TABLE>'
+//
+// *Rows that returns by Query() must be closed to prevent leaks.
+//
+//	ctx, cancelFunc := context.WithTimeout(5*time.Second)
+//	defer cancelFunc()
+//
+//	rows, err := client.Query(ctx, "select * from my_table where name = ?", my_name)
+//	if err != nil {
+//		panic(err)
+//	}
+//	defer rows.Close()
 func (client *Client) QueryContext(ctx context.Context, sqlText string, params ...any) (*Rows, error) {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
@@ -290,6 +340,7 @@ type Rows struct {
 	err     error
 }
 
+// Close release all resources that assigned to the Rows
 func (rows *Rows) Close() error {
 	var ctx context.Context
 	if rows.client.closeTimeout > 0 {
@@ -303,6 +354,7 @@ func (rows *Rows) Close() error {
 	return err
 }
 
+// IsFetchable returns true if statement that produced this Rows was fetch-able (e.g was select?)
 func (rows *Rows) IsFetchable() bool {
 	return rows.handle != nil
 }
@@ -311,6 +363,7 @@ func (rows *Rows) Message() string {
 	return rows.message
 }
 
+// Columns returns list of column info that consists of result of query statement.
 func (rows *Rows) Columns() ([]*Column, error) {
 	ctx, cancelFunc := rows.client.queryContext()
 	defer cancelFunc()
@@ -330,6 +383,14 @@ func (rows *Rows) Columns() ([]*Column, error) {
 	}
 }
 
+// Next returns true if there are at least one more record that can be fetchable
+// rows, _ := client.Query("select name, value from my_table")
+//
+//	for rows.Next(){
+//		var name string
+//		var value float64
+//		rows.Scan(&name, &value)
+//	}
 func (rows *Rows) Next() bool {
 	if rows.err != nil {
 		return false
@@ -355,6 +416,13 @@ func (rows *Rows) Next() bool {
 	return !rsp.HasNoRows
 }
 
+// Scan retrieve values of columns
+//
+//	for rows.Next(){
+//		var name string
+//		var value float64
+//		rows.Scan(&name, &value)
+//	}
 func (rows *Rows) Scan(cols ...any) error {
 	if rows.err != nil {
 		return rows.err
@@ -365,6 +433,11 @@ func (rows *Rows) Scan(cols ...any) error {
 	return scan(rows.values, cols)
 }
 
+// QueryRow executes a SQL statement that expects a single row result.
+//
+//	var cnt int
+//	row := client.QueryRoq("select count(*) from my_table where name = ?", "my_name")
+//	row.Scan(&cnt)
 func (client *Client) QueryRow(sqlText string, params ...any) *Row {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
@@ -480,6 +553,12 @@ func scan(src []any, dst []any) error {
 	return nil
 }
 
+// Appender creates a new Appender for the given table.
+// Appender should be closed otherwise it may cause server side resource leak.
+//
+//	app, _ := client.Appender("MYTABLE")
+//	defer app.Close()
+//	app.Append("name", time.Now(), 3.14)
 func (client *Client) Appender(tableName string) (*Appender, error) {
 	var ctx0 context.Context
 	if client.appendTimeout > 0 {
@@ -519,6 +598,7 @@ type Appender struct {
 	handle       string
 }
 
+// Close releases all resources that allocated to the Appender
 func (appender *Appender) Close() error {
 	if appender.appendClient == nil {
 		return nil
@@ -534,6 +614,7 @@ func (appender *Appender) Close() error {
 	return nil
 }
 
+// Append appends a new record of the table.
 func (appender *Appender) Append(cols ...any) error {
 	if appender.appendClient == nil {
 		return sql.ErrTxDone

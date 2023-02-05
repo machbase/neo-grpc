@@ -5,7 +5,53 @@ package mgmt;
 option go_package = "github.com/machbase/neo-grpc/mgmt";
 
 service Management {
+    rpc ListKey(ListKeyRequest) returns (ListKeyResponse) {}
+    rpc GenKey(GenKeyRequest) returns (GenKeyResponse) {}
+    rpc DelKey(DelKeyRequest) returns (DelKeyResponse) {}
     rpc Shutdown(ShutdownRequest) returns (ShutdownResponse) {}
+}
+
+message ListKeyRequest {
+}
+
+message ListKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated KeyInfo keys = 4;
+}
+
+message GenKeyRequest {
+    string id = 1;
+    string type = 2;      // rsa, ecdsa
+    int64  notBefore = 3; // unix epoch in seconds
+    int64  notAfter = 4;  // unix epoch in seconds
+}
+
+message GenKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    string id = 4;
+    string token = 5;
+    string key = 6;
+    string certificate = 7;
+}
+
+message DelKeyRequest {
+    string id = 1;
+}
+
+message DelKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message KeyInfo {
+    string id = 1;
+    int64  notBefore = 3;
+    int64  notAfter = 4;
 }
 
 message ShutdownRequest {

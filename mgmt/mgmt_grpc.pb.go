@@ -22,6 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ManagementClient interface {
+	ListKey(ctx context.Context, in *ListKeyRequest, opts ...grpc.CallOption) (*ListKeyResponse, error)
+	GenKey(ctx context.Context, in *GenKeyRequest, opts ...grpc.CallOption) (*GenKeyResponse, error)
+	DelKey(ctx context.Context, in *DelKeyRequest, opts ...grpc.CallOption) (*DelKeyResponse, error)
 	Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error)
 }
 
@@ -31,6 +34,33 @@ type managementClient struct {
 
 func NewManagementClient(cc grpc.ClientConnInterface) ManagementClient {
 	return &managementClient{cc}
+}
+
+func (c *managementClient) ListKey(ctx context.Context, in *ListKeyRequest, opts ...grpc.CallOption) (*ListKeyResponse, error) {
+	out := new(ListKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/ListKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) GenKey(ctx context.Context, in *GenKeyRequest, opts ...grpc.CallOption) (*GenKeyResponse, error) {
+	out := new(GenKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/GenKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) DelKey(ctx context.Context, in *DelKeyRequest, opts ...grpc.CallOption) (*DelKeyResponse, error) {
+	out := new(DelKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/DelKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *managementClient) Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error) {
@@ -46,6 +76,9 @@ func (c *managementClient) Shutdown(ctx context.Context, in *ShutdownRequest, op
 // All implementations must embed UnimplementedManagementServer
 // for forward compatibility
 type ManagementServer interface {
+	ListKey(context.Context, *ListKeyRequest) (*ListKeyResponse, error)
+	GenKey(context.Context, *GenKeyRequest) (*GenKeyResponse, error)
+	DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error)
 	Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
@@ -54,6 +87,15 @@ type ManagementServer interface {
 type UnimplementedManagementServer struct {
 }
 
+func (UnimplementedManagementServer) ListKey(context.Context, *ListKeyRequest) (*ListKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListKey not implemented")
+}
+func (UnimplementedManagementServer) GenKey(context.Context, *GenKeyRequest) (*GenKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenKey not implemented")
+}
+func (UnimplementedManagementServer) DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelKey not implemented")
+}
 func (UnimplementedManagementServer) Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
 }
@@ -68,6 +110,60 @@ type UnsafeManagementServer interface {
 
 func RegisterManagementServer(s grpc.ServiceRegistrar, srv ManagementServer) {
 	s.RegisterService(&Management_ServiceDesc, srv)
+}
+
+func _Management_ListKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).ListKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/ListKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).ListKey(ctx, req.(*ListKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_GenKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).GenKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/GenKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).GenKey(ctx, req.(*GenKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_DelKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).DelKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/DelKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).DelKey(ctx, req.(*DelKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Management_Shutdown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -95,6 +191,18 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "mgmt.Management",
 	HandlerType: (*ManagementServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListKey",
+			Handler:    _Management_ListKey_Handler,
+		},
+		{
+			MethodName: "GenKey",
+			Handler:    _Management_GenKey_Handler,
+		},
+		{
+			MethodName: "DelKey",
+			Handler:    _Management_DelKey_Handler,
+		},
 		{
 			MethodName: "Shutdown",
 			Handler:    _Management_Shutdown_Handler,

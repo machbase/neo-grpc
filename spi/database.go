@@ -2,6 +2,9 @@ package spi
 
 import (
 	"context"
+	"fmt"
+	"net"
+	"time"
 )
 
 type Database interface {
@@ -148,6 +151,57 @@ type Column struct {
 	Type   string
 	Size   int32
 	Length int32
+}
+
+func (cols Columns) Names(tz *time.Location) []string {
+	names := make([]string, len(cols))
+	colIdxOffset := 0
+	for i := range cols {
+		if cols[i].Type == "datetime" {
+			names[i+colIdxOffset] = fmt.Sprintf("%s(%s)", cols[i].Name, tz.String())
+		} else {
+			names[i+colIdxOffset] = cols[i].Name
+		}
+	}
+	return names
+}
+
+func (cols Columns) Types() []string {
+	types := make([]string, len(cols))
+	colIdxOffset := 0
+	for i := range cols {
+		types[i+colIdxOffset] = cols[i].Type
+	}
+	return types
+}
+
+func (cols Columns) MakeBuffer() []any {
+	rec := make([]any, len(cols))
+	for i := range cols {
+		switch cols[i].Type {
+		case "int16":
+			rec[i] = new(int16)
+		case "int32":
+			rec[i] = new(int32)
+		case "int64":
+			rec[i] = new(int64)
+		case "datetime":
+			rec[i] = new(time.Time)
+		case "float":
+			rec[i] = new(float32)
+		case "double":
+			rec[i] = new(float64)
+		case "ipv4":
+			rec[i] = new(net.IP)
+		case "ipv6":
+			rec[i] = new(net.IP)
+		case "string":
+			rec[i] = new(string)
+		case "binary":
+			rec[i] = new([]byte)
+		}
+	}
+	return rec
 }
 
 type Appender interface {

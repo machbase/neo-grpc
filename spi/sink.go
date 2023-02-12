@@ -1,7 +1,7 @@
 package spi
 
 type Sink interface {
-	Write(p []byte) (n int, err error)
+	Write([]byte) (int, error)
 	Flush() error
 	Close() error
 }

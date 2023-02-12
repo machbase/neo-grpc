@@ -6,18 +6,18 @@ import "strings"
 //
 // If includeHiddenColumns is true, the result includes hidden columns those name start with '_'
 // such as "_RID" and "_ARRIVAL_TIME".
-func Describe(client Database, name string, includeHiddenColumns bool) (Description, error) {
+func DoDescribe(db Database, name string, includeHiddenColumns bool) (Description, error) {
 	d := &TableDescription{}
 	var tableType int
 	var colCount int
 	var colType int
-	r := client.QueryRow("select name, type, flag, id, colcount from M$SYS_TABLES where name = ?", strings.ToUpper(name))
+	r := db.QueryRow("select name, type, flag, id, colcount from M$SYS_TABLES where name = ?", strings.ToUpper(name))
 	if err := r.Scan(&d.Name, &tableType, &d.Flag, &d.Id, &colCount); err != nil {
 		return nil, err
 	}
 	d.Type = TableType(tableType)
 
-	rows, err := client.Query(`
+	rows, err := db.Query(`
 		select
 			name, type, length, id
 		from

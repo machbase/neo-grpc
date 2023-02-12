@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/machbase/neo-grpc/machrpc"
+	"github.com/machbase/neo-grpc/spi"
 )
 
 func init() {
@@ -222,11 +223,11 @@ func (stmt *NeoStmt) QueryContext(ctx context.Context, args []driver.NamedValue)
 }
 
 type NeoResult struct {
-	row *machrpc.Row
+	row spi.Row
 }
 
 func (r *NeoResult) LastInsertId() (int64, error) {
-	return 0, errors.New("LastInsertId is not supported by this driver")
+	return 0, errors.New("LastInsertId is not implemented")
 }
 
 func (r *NeoResult) RowsAffected() (int64, error) {
@@ -237,8 +238,8 @@ func (r *NeoResult) RowsAffected() (int64, error) {
 }
 
 type NeoRows struct {
-	rows *machrpc.Rows
-	cols []*machrpc.Column
+	rows spi.Rows
+	cols spi.Columns
 }
 
 func (r *NeoRows) Columns() []string {

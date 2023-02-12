@@ -7,12 +7,18 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
-	"strings"
 	"time"
 
+	"github.com/machbase/neo-grpc/spi"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
+
+func init() {
+	spi.RegisterFactory("grpc", func() (spi.Database, error) {
+		return NewClient(), nil
+	})
+}
 
 // Client is a convenient data type represents client side of machbase-neo.
 //
@@ -67,7 +73,7 @@ func (client *Client) Disconnect() {
 }
 
 // GetServerInfo invoke gRPC call to get ServerInfo
-func (client *Client) GetServerInfo() (*ServerInfo, error) {
+func (client *Client) GetServerInfo() (*spi.ServerInfo, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	req := &ServerInfoRequest{}
@@ -78,7 +84,35 @@ func (client *Client) GetServerInfo() (*ServerInfo, error) {
 	if !rsp.Success {
 		return nil, errors.New(rsp.Reason)
 	}
-	return rsp, nil
+	return toSpiServerInfo(rsp), nil
+}
+
+func toSpiServerInfo(info *ServerInfo) *spi.ServerInfo {
+	return &spi.ServerInfo{
+		Version: spi.Version{
+			Major:          info.Version.Major,
+			Minor:          info.Version.Minor,
+			Patch:          info.Version.Patch,
+			GitSHA:         info.Version.GitSHA,
+			BuildTimestamp: info.Version.BuildTimestamp,
+			BuildCompiler:  info.Version.BuildCompiler,
+			Engine:         info.Version.Engine,
+		},
+		Runtime: spi.Runtime{
+			OS:             info.Runtime.OS,
+			Arch:           info.Runtime.Arch,
+			Pid:            info.Runtime.Pid,
+			UptimeInSecond: info.Runtime.UptimeInSecond,
+			Processes:      info.Runtime.Processes,
+			Goroutines:     info.Runtime.Goroutines,
+			MemSys:         info.Runtime.MemSys,
+			MemHeapSys:     info.Runtime.MemHeapSys,
+			MemHeapAlloc:   info.Runtime.MemHeapAlloc,
+			MemHeapInUse:   info.Runtime.MemHeapInUse,
+			MemStackSys:    info.Runtime.MemStackSys,
+			MemStackInUse:  info.Runtime.MemStackInUse,
+		},
+	}
 }
 
 // Explain retrieve execution plan of the given SQL statement.
@@ -94,153 +128,6 @@ func (client *Client) Explain(sqlText string) (string, error) {
 		return "", fmt.Errorf(rsp.Reason)
 	}
 	return rsp.Plan, nil
-}
-
-type Description interface {
-	description()
-}
-
-func (td *TableDescription) description()  {}
-func (cd *ColumnDescription) description() {}
-
-// TableDescription is represents data that comes as a result of 'desc <table>'
-type TableDescription struct {
-	Name    string               `json:"name"`
-	Type    TableType            `json:"type"`
-	Flag    int                  `json:"flag"`
-	Id      int                  `json:"id"`
-	Columns []*ColumnDescription `json:"columns"`
-}
-
-// TypeString returns string representation of table type.
-func (td *TableDescription) TypeString() string {
-	return TableTypeDescription(td.Type, td.Flag)
-}
-
-// TableTypeDescription converts the given TableType and flag into string representation.
-func TableTypeDescription(typ TableType, flag int) string {
-	desc := "undef"
-	switch typ {
-	case LogTableType:
-		desc = "Log Table"
-	case FixedTableType:
-		desc = "Fixed Table"
-	case VolatileTableType:
-		desc = "Volatile Table"
-	case LookupTableType:
-		desc = "Lookup Table"
-	case KeyValueTableType:
-		desc = "KeyValue Table"
-	case TagTableType:
-		desc = "Tag Table"
-	}
-	switch flag {
-	case 1:
-		desc += " (data)"
-	case 2:
-		desc += " (rollup)"
-	case 4:
-		desc += " (meta)"
-	case 8:
-		desc += " (stat)"
-	}
-	return desc
-}
-
-// columnDescription represents information of a column info.
-type ColumnDescription struct {
-	Id     uint64     `json:"id"`
-	Name   string     `json:"name"`
-	Type   ColumnType `json:"type"`
-	Length int        `json:"length"`
-}
-
-// TypeString returns string representation of column type.
-func (cd *ColumnDescription) TypeString() string {
-	return ColumnTypeDescription(cd.Type)
-}
-
-// ColumnTypeDescription converts ColumnType into string.
-func ColumnTypeDescription(typ ColumnType) string {
-	switch typ {
-	case Int16ColumnType:
-		return "int16"
-	case Uint16ColumnType:
-		return "uint16"
-	case Int32ColumnType:
-		return "int32"
-	case Uint32ColumnType:
-		return "uint32"
-	case Int64ColumnType:
-		return "int64"
-	case Uint64ColumnType:
-		return "uint64"
-	case Float32ColumnType:
-		return "float"
-	case Float64ColumnType:
-		return "double"
-	case VarcharColumnType:
-		return "varchar"
-	case TextColumnType:
-		return "text"
-	case ClobColumnType:
-		return "clob"
-	case BlobColumnType:
-		return "blob"
-	case BinaryColumnType:
-		return "binary"
-	case DatetimeColumnType:
-		return "datetime"
-	case IpV4ColumnType:
-		return "ipv4"
-	case IpV6ColumnType:
-		return "ipv6"
-	default:
-		return "undef"
-	}
-}
-
-// Describe retrieves the result of 'desc table'.
-//
-// If includeHiddenColumns is true, the result includes hidden columns those name start with '_'
-// such as "_RID" and "_ARRIVAL_TIME".
-func (client *Client) Describe(name string, includeHiddenColumns bool) (Description, error) {
-	d := &TableDescription{}
-	var tableType int
-	var colCount int
-	var colType int
-	r := client.QueryRow("select name, type, flag, id, colcount from M$SYS_TABLES where name = ?", strings.ToUpper(name))
-	if err := r.Scan(&d.Name, &tableType, &d.Flag, &d.Id, &colCount); err != nil {
-		return nil, err
-	}
-	d.Type = TableType(tableType)
-
-	rows, err := client.Query(`
-		select
-			name, type, length, id
-		from
-			M$SYS_COLUMNS
-		where
-			table_id = ? 
-		order by id`, d.Id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		col := &ColumnDescription{}
-		err = rows.Scan(&col.Name, &colType, &col.Length, &col.Id)
-		if err != nil {
-			return nil, err
-		}
-		if !includeHiddenColumns && strings.HasPrefix(col.Name, "_") {
-			continue
-		}
-		col.Type = ColumnType(colType)
-		d.Columns = append(d.Columns, col)
-	}
-	return d, nil
 }
 
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {
@@ -284,14 +171,14 @@ func (client *Client) ExecContext(ctx context.Context, sqlText string, params ..
 // Query executes SQL statements that are expected multipe rows as result.
 // Commonly used to execute 'SELECT * FROM <TABLE>'
 //
-// *Rows that returns by Query() must be closed to prevent leaks.
+// Rows returned by Query() must be closed to prevent leaking resources.
 //
 //	rows, err := client.Query("select * from my_table where name = ?", "my_name")
 //	if err != nil {
 //		panic(err)
 //	}
 //	defer rows.Close()
-func (client *Client) Query(sqlText string, params ...any) (*Rows, error) {
+func (client *Client) Query(sqlText string, params ...any) (spi.Rows, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	return client.QueryContext(ctx, sqlText, params...)
@@ -300,17 +187,17 @@ func (client *Client) Query(sqlText string, params ...any) (*Rows, error) {
 // Query executes SQL statements that are expected multipe rows as result.
 // Commonly used to execute 'SELECT * FROM <TABLE>'
 //
-// *Rows that returns by Query() must be closed to prevent leaks.
+// Rows returned by QueryContext() must be closed to prevent leaking resources.
 //
 //	ctx, cancelFunc := context.WithTimeout(5*time.Second)
 //	defer cancelFunc()
 //
-//	rows, err := client.Query(ctx, "select * from my_table where name = ?", my_name)
+//	rows, err := client.QueryContext(ctx, "select * from my_table where name = ?", my_name)
 //	if err != nil {
 //		panic(err)
 //	}
 //	defer rows.Close()
-func (client *Client) QueryContext(ctx context.Context, sqlText string, params ...any) (*Rows, error) {
+func (client *Client) QueryContext(ctx context.Context, sqlText string, params ...any) (spi.Rows, error) {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return nil, err
@@ -364,7 +251,7 @@ func (rows *Rows) Message() string {
 }
 
 // Columns returns list of column info that consists of result of query statement.
-func (rows *Rows) Columns() ([]*Column, error) {
+func (rows *Rows) Columns() (spi.Columns, error) {
 	ctx, cancelFunc := rows.client.queryContext()
 	defer cancelFunc()
 
@@ -373,7 +260,7 @@ func (rows *Rows) Columns() ([]*Column, error) {
 		return nil, err
 	}
 	if rsp.Success {
-		return rsp.Columns, nil
+		return toSpiColumns(rsp.Columns), nil
 	} else {
 		if len(rsp.Reason) > 0 {
 			return nil, errors.New(rsp.Reason)
@@ -381,6 +268,19 @@ func (rows *Rows) Columns() ([]*Column, error) {
 			return nil, fmt.Errorf("fail to get columns info")
 		}
 	}
+}
+
+func toSpiColumns(cols []*Column) spi.Columns {
+	rt := make([]*spi.Column, len(cols))
+	for i, c := range cols {
+		rt[i] = &spi.Column{
+			Name:   c.Name,
+			Type:   c.Type,
+			Size:   c.Size,
+			Length: c.Length,
+		}
+	}
+	return rt
 }
 
 // Next returns true if there are at least one more record that can be fetchable
@@ -438,13 +338,13 @@ func (rows *Rows) Scan(cols ...any) error {
 //	var cnt int
 //	row := client.QueryRoq("select count(*) from my_table where name = ?", "my_name")
 //	row.Scan(&cnt)
-func (client *Client) QueryRow(sqlText string, params ...any) *Row {
+func (client *Client) QueryRow(sqlText string, params ...any) spi.Row {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	return client.QueryRowContext(ctx, sqlText, params...)
 }
 
-func (client *Client) QueryRowContext(ctx context.Context, sqlText string, params ...any) *Row {
+func (client *Client) QueryRowContext(ctx context.Context, sqlText string, params ...any) spi.Row {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return &Row{success: false, err: err}
@@ -473,6 +373,10 @@ type Row struct {
 	values  []any
 
 	affectedRows int64
+}
+
+func (row *Row) Success() bool {
+	return row.success
 }
 
 func (row *Row) Err() error {
@@ -559,7 +463,7 @@ func scan(src []any, dst []any) error {
 //	app, _ := client.Appender("MYTABLE")
 //	defer app.Close()
 //	app.Append("name", time.Now(), 3.14)
-func (client *Client) Appender(tableName string) (*Appender, error) {
+func (client *Client) Appender(tableName string) (spi.Appender, error) {
 	var ctx0 context.Context
 	if client.appendTimeout > 0 {
 		_ctx, _cf := context.WithTimeout(context.Background(), client.appendTimeout)

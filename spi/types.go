@@ -1,4 +1,4 @@
-package machrpc
+package spi
 
 type TableType int
 

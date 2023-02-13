@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/machbase/neo-grpc/machrpc"
-	"github.com/machbase/neo-grpc/spi"
+	spi "github.com/machbase/neo-spi"
 )
 
 func init() {

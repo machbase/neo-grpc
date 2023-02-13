@@ -9,7 +9,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/machbase/neo-grpc/spi"
+	spi "github.com/machbase/neo-spi"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 )
@@ -141,7 +141,7 @@ func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 
 // Exec executes SQL statements that does not return result
 // like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
-func (client *Client) Exec(sqlText string, params ...any) error {
+func (client *Client) Exec(sqlText string, params ...any) spi.Result {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	return client.ExecContext(ctx, sqlText, params...)
@@ -149,10 +149,10 @@ func (client *Client) Exec(sqlText string, params ...any) error {
 
 // Exec executes SQL statements that does not return result
 // like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
-func (client *Client) ExecContext(ctx context.Context, sqlText string, params ...any) error {
+func (client *Client) ExecContext(ctx context.Context, sqlText string, params ...any) spi.Result {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
-		return err
+		return &ExecResult{err: err}
 	}
 	req := &ExecRequest{
 		Sql:    sqlText,
@@ -160,12 +160,30 @@ func (client *Client) ExecContext(ctx context.Context, sqlText string, params ..
 	}
 	rsp, err := client.cli.Exec(ctx, req)
 	if err != nil {
-		return err
+		return &ExecResult{err: err}
 	}
 	if !rsp.Success {
-		return fmt.Errorf(rsp.Reason)
+		return &ExecResult{err: errors.New(rsp.Reason), message: rsp.Reason}
 	}
-	return nil
+	return &ExecResult{message: rsp.Reason, rowsAffected: rsp.RowsAffected}
+}
+
+type ExecResult struct {
+	err          error
+	rowsAffected int64
+	message      string
+}
+
+func (r *ExecResult) Err() error {
+	return r.err
+}
+
+func (r *ExecResult) RowsAffected() int64 {
+	return r.rowsAffected
+}
+
+func (r *ExecResult) Message() string {
+	return r.message
 }
 
 // Query executes SQL statements that are expected multipe rows as result.
@@ -210,7 +228,7 @@ func (client *Client) QueryContext(ctx context.Context, sqlText string, params .
 	}
 
 	if rsp.Success {
-		return &Rows{client: client, message: rsp.Reason, handle: rsp.RowsHandle}, nil
+		return &Rows{client: client, rowsAffected: rsp.RowsAffected, message: rsp.Reason, handle: rsp.RowsHandle}, nil
 	} else {
 		if len(rsp.Reason) > 0 {
 			return nil, errors.New(rsp.Reason)
@@ -220,11 +238,12 @@ func (client *Client) QueryContext(ctx context.Context, sqlText string, params .
 }
 
 type Rows struct {
-	client  *Client
-	message string
-	handle  *RowsHandle
-	values  []any
-	err     error
+	client       *Client
+	message      string
+	rowsAffected int64
+	handle       *RowsHandle
+	values       []any
+	err          error
 }
 
 // Close release all resources that assigned to the Rows
@@ -248,6 +267,10 @@ func (rows *Rows) IsFetchable() bool {
 
 func (rows *Rows) Message() string {
 	return rows.message
+}
+
+func (rows *Rows) RowsAffected() int64 {
+	return rows.rowsAffected
 }
 
 // Columns returns list of column info that consists of result of query statement.
@@ -358,7 +381,7 @@ func (client *Client) QueryRowContext(ctx context.Context, sqlText string, param
 
 	var row = &Row{}
 	row.success = rsp.Success
-	row.affectedRows = rsp.AffectedRows
+	row.rowsAffected = rsp.RowsAffected
 	row.err = nil
 	if !rsp.Success && len(rsp.Reason) > 0 {
 		row.err = errors.New(rsp.Reason)
@@ -372,7 +395,7 @@ type Row struct {
 	err     error
 	values  []any
 
-	affectedRows int64
+	rowsAffected int64
 }
 
 func (row *Row) Success() bool {
@@ -395,7 +418,15 @@ func (row *Row) Scan(cols ...any) error {
 }
 
 func (row *Row) RowsAffected() int64 {
-	return row.affectedRows
+	return row.rowsAffected
+}
+
+func (row *Row) Message() string {
+	// TODO
+	return ""
+}
+func (row *Row) Values() []any {
+	return row.values
 }
 
 func scan(src []any, dst []any) error {
@@ -526,6 +557,10 @@ func (appender *Appender) TableName() string {
 
 func (appender *Appender) TableType() spi.TableType {
 	return appender.tableType
+}
+
+func (appender *Appender) AppendWithTimestamp(ts time.Time, cols ...any) error {
+	return appender.Append(append([]any{ts}, cols...))
 }
 
 // Append appends a new record of the table.

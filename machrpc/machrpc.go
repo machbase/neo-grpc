@@ -490,7 +490,8 @@ func (client *Client) Appender(tableName string) (spi.Appender, error) {
 	return &Appender{
 		client:       client,
 		appendClient: appendClient,
-		tableName:    tableName,
+		tableName:    openRsp.TableName,
+		tableType:    spi.TableType(openRsp.TableType),
 		handle:       openRsp.Handle,
 	}, nil
 }
@@ -499,6 +500,7 @@ type Appender struct {
 	client       *Client
 	appendClient Machbase_AppendClient
 	tableName    string
+	tableType    spi.TableType
 	handle       string
 }
 
@@ -518,6 +520,14 @@ func (appender *Appender) Close() (int64, int64, error) {
 	return 0, 0, nil
 }
 
+func (appender *Appender) TableName() string {
+	return appender.tableName
+}
+
+func (appender *Appender) TableType() spi.TableType {
+	return appender.tableType
+}
+
 // Append appends a new record of the table.
 func (appender *Appender) Append(cols ...any) error {
 	if appender.appendClient == nil {
@@ -533,4 +543,9 @@ func (appender *Appender) Append(cols ...any) error {
 		Params: params,
 	})
 	return err
+}
+
+func (appender *Appender) Columns() (spi.Columns, error) {
+	// TODO implements
+	return nil, nil
 }

@@ -11,6 +11,25 @@ const (
 	TagTableType                = 6
 )
 
+func (t TableType) String() string {
+	switch t {
+	case LogTableType:
+		return "LogTable"
+	case FixedTableType:
+		return "FixedTable"
+	case VolatileTableType:
+		return "VolatileTable"
+	case LookupTableType:
+		return "LookupTable"
+	case KeyValueTableType:
+		return "KeyValueTable"
+	case TagTableType:
+		return "TagTable"
+	default:
+		return "Undefined"
+	}
+}
+
 type ColumnType int
 
 const (

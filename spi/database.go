@@ -153,14 +153,21 @@ type Column struct {
 	Length int
 }
 
-func (cols Columns) Names(tz *time.Location) []string {
+func (cols Columns) Names() []string {
 	names := make([]string, len(cols))
-	colIdxOffset := 0
+	for i := range cols {
+		names[i] = cols[i].Name
+	}
+	return names
+}
+
+func (cols Columns) NamesWithTimeLocation(tz *time.Location) []string {
+	names := make([]string, len(cols))
 	for i := range cols {
 		if cols[i].Type == "datetime" {
-			names[i+colIdxOffset] = fmt.Sprintf("%s(%s)", cols[i].Name, tz.String())
+			names[i] = fmt.Sprintf("%s(%s)", cols[i].Name, tz.String())
 		} else {
-			names[i+colIdxOffset] = cols[i].Name
+			names[i] = cols[i].Name
 		}
 	}
 	return names
@@ -168,9 +175,8 @@ func (cols Columns) Names(tz *time.Location) []string {
 
 func (cols Columns) Types() []string {
 	types := make([]string, len(cols))
-	colIdxOffset := 0
 	for i := range cols {
-		types[i+colIdxOffset] = cols[i].Type
+		types[i] = cols[i].Type
 	}
 	return types
 }
@@ -205,6 +211,9 @@ func (cols Columns) MakeBuffer() []any {
 }
 
 type Appender interface {
-	Append(cols ...any) error
+	TableName() string
+	TableType() TableType
+	Columns() (Columns, error)
+	Append(values ...any) error
 	Close() (int64, int64, error)
 }

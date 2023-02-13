@@ -28,6 +28,8 @@ message AppenderResponse {
     string reason = 2;
     string elapse = 3;
     string handle = 4;
+    string tableName = 5;
+    int32 tableType = 6;
 }
 
 message AppendData {

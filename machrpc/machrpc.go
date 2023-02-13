@@ -276,8 +276,8 @@ func toSpiColumns(cols []*Column) spi.Columns {
 		rt[i] = &spi.Column{
 			Name:   c.Name,
 			Type:   c.Type,
-			Size:   c.Size,
-			Length: c.Length,
+			Size:   int(c.Size),
+			Length: int(c.Length),
 		}
 	}
 	return rt
@@ -503,9 +503,9 @@ type Appender struct {
 }
 
 // Close releases all resources that allocated to the Appender
-func (appender *Appender) Close() error {
+func (appender *Appender) Close() (int64, int64, error) {
 	if appender.appendClient == nil {
-		return nil
+		return 0, 0, nil
 	}
 
 	client := appender.appendClient
@@ -513,9 +513,9 @@ func (appender *Appender) Close() error {
 
 	err := client.CloseSend()
 	if err != nil {
-		return err
+		return 0, 0, err
 	}
-	return nil
+	return 0, 0, nil
 }
 
 // Append appends a new record of the table.

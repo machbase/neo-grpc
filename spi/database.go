@@ -149,8 +149,8 @@ type Columns []*Column
 type Column struct {
 	Name   string
 	Type   string
-	Size   int32
-	Length int32
+	Size   int
+	Length int
 }
 
 func (cols Columns) Names(tz *time.Location) []string {
@@ -206,5 +206,5 @@ func (cols Columns) MakeBuffer() []any {
 
 type Appender interface {
 	Append(cols ...any) error
-	Close() error
+	Close() (int64, int64, error)
 }

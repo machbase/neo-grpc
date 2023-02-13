@@ -14,12 +14,6 @@ import (
 	"google.golang.org/grpc"
 )
 
-func init() {
-	spi.RegisterFactory("grpc", func() (spi.Database, error) {
-		return NewClient(), nil
-	})
-}
-
 // Client is a convenient data type represents client side of machbase-neo.
 //
 //	client := machrpc.NewClient()
@@ -33,21 +27,11 @@ type Client struct {
 }
 
 // NewClient creates new instance of Client.
-func NewClient(options ...ClientOption) *Client {
+func NewClient() spi.DatabaseClient {
 	client := &Client{
 		closeTimeout:  3 * time.Second,
 		queryTimeout:  0,
 		appendTimeout: 3 * time.Second,
-	}
-	for _, opt := range options {
-		switch o := opt.(type) {
-		case *queryTimeoutOption:
-			client.queryTimeout = o.timeout
-		case *closeTimeoutOption:
-			client.closeTimeout = o.timeout
-		case *appendTimeoutOption:
-			client.appendTimeout = o.timeout
-		}
 	}
 	return client
 }
@@ -56,13 +40,26 @@ func NewClient(options ...ClientOption) *Client {
 //
 // serverAddr can be tcp://ipaddr:port or unix://path.
 // The path of unix domain socket can be absolute/releative path.
-func (client *Client) Connect(serverAddr string) error {
+func (client *Client) Connect(serverAddr string, opts ...any) error {
 	conn, err := MakeGrpcConn(serverAddr)
 	if err != nil {
 		return errors.Wrap(err, "NewClient")
 	}
 	client.conn = conn
 	client.cli = NewMachbaseClient(conn)
+
+	for _, opt := range opts {
+		switch o := opt.(type) {
+		case *queryTimeoutOption:
+			client.queryTimeout = o.timeout
+		case *closeTimeoutOption:
+			client.closeTimeout = o.timeout
+		case *appendTimeoutOption:
+			client.appendTimeout = o.timeout
+		default:
+			return fmt.Errorf("unknown option %+v", o)
+		}
+	}
 	return nil
 }
 

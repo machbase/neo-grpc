@@ -8,7 +8,48 @@ service Management {
     rpc ListKey(ListKeyRequest) returns (ListKeyResponse) {}
     rpc GenKey(GenKeyRequest) returns (GenKeyResponse) {}
     rpc DelKey(DelKeyRequest) returns (DelKeyResponse) {}
+    rpc ListSshKey(ListSshKeyRequest) returns (ListSshKeyResponse) {}
+    rpc AddSshKey(AddSshKeyRequest) returns (AddSshKeyResponse) {}
+    rpc DelSshKey(DelSshKeyRequest) returns (DelSshKeyResponse) {}
     rpc Shutdown(ShutdownRequest) returns (ShutdownResponse) {}
+}
+
+message ListSshKeyRequest {
+}
+
+message ListSshKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated SshKey sshKeys = 4;
+}
+
+message SshKey {
+    string keyType = 1;
+    string fingerprint = 2;
+    string comment = 3;
+}
+
+message AddSshKeyRequest {
+    string keyType = 1;
+    string key = 2;
+    string comment = 3;
+}
+
+message AddSshKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message DelSshKeyRequest {
+    string fingerprint = 1;
+}
+
+message DelSshKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
 }
 
 message ListKeyRequest {

@@ -25,6 +25,9 @@ type ManagementClient interface {
 	ListKey(ctx context.Context, in *ListKeyRequest, opts ...grpc.CallOption) (*ListKeyResponse, error)
 	GenKey(ctx context.Context, in *GenKeyRequest, opts ...grpc.CallOption) (*GenKeyResponse, error)
 	DelKey(ctx context.Context, in *DelKeyRequest, opts ...grpc.CallOption) (*DelKeyResponse, error)
+	ListSshKey(ctx context.Context, in *ListSshKeyRequest, opts ...grpc.CallOption) (*ListSshKeyResponse, error)
+	AddSshKey(ctx context.Context, in *AddSshKeyRequest, opts ...grpc.CallOption) (*AddSshKeyResponse, error)
+	DelSshKey(ctx context.Context, in *DelSshKeyRequest, opts ...grpc.CallOption) (*DelSshKeyResponse, error)
 	Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error)
 }
 
@@ -63,6 +66,33 @@ func (c *managementClient) DelKey(ctx context.Context, in *DelKeyRequest, opts .
 	return out, nil
 }
 
+func (c *managementClient) ListSshKey(ctx context.Context, in *ListSshKeyRequest, opts ...grpc.CallOption) (*ListSshKeyResponse, error) {
+	out := new(ListSshKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/ListSshKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) AddSshKey(ctx context.Context, in *AddSshKeyRequest, opts ...grpc.CallOption) (*AddSshKeyResponse, error) {
+	out := new(AddSshKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/AddSshKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) DelSshKey(ctx context.Context, in *DelSshKeyRequest, opts ...grpc.CallOption) (*DelSshKeyResponse, error) {
+	out := new(DelSshKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/DelSshKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *managementClient) Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error) {
 	out := new(ShutdownResponse)
 	err := c.cc.Invoke(ctx, "/mgmt.Management/Shutdown", in, out, opts...)
@@ -79,6 +109,9 @@ type ManagementServer interface {
 	ListKey(context.Context, *ListKeyRequest) (*ListKeyResponse, error)
 	GenKey(context.Context, *GenKeyRequest) (*GenKeyResponse, error)
 	DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error)
+	ListSshKey(context.Context, *ListSshKeyRequest) (*ListSshKeyResponse, error)
+	AddSshKey(context.Context, *AddSshKeyRequest) (*AddSshKeyResponse, error)
+	DelSshKey(context.Context, *DelSshKeyRequest) (*DelSshKeyResponse, error)
 	Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
@@ -95,6 +128,15 @@ func (UnimplementedManagementServer) GenKey(context.Context, *GenKeyRequest) (*G
 }
 func (UnimplementedManagementServer) DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelKey not implemented")
+}
+func (UnimplementedManagementServer) ListSshKey(context.Context, *ListSshKeyRequest) (*ListSshKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSshKey not implemented")
+}
+func (UnimplementedManagementServer) AddSshKey(context.Context, *AddSshKeyRequest) (*AddSshKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddSshKey not implemented")
+}
+func (UnimplementedManagementServer) DelSshKey(context.Context, *DelSshKeyRequest) (*DelSshKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelSshKey not implemented")
 }
 func (UnimplementedManagementServer) Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
@@ -166,6 +208,60 @@ func _Management_DelKey_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Management_ListSshKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSshKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).ListSshKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/ListSshKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).ListSshKey(ctx, req.(*ListSshKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_AddSshKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddSshKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).AddSshKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/AddSshKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).AddSshKey(ctx, req.(*AddSshKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_DelSshKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelSshKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).DelSshKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/DelSshKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).DelSshKey(ctx, req.(*DelSshKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Management_Shutdown_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ShutdownRequest)
 	if err := dec(in); err != nil {
@@ -202,6 +298,18 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelKey",
 			Handler:    _Management_DelKey_Handler,
+		},
+		{
+			MethodName: "ListSshKey",
+			Handler:    _Management_ListSshKey_Handler,
+		},
+		{
+			MethodName: "AddSshKey",
+			Handler:    _Management_AddSshKey_Handler,
+		},
+		{
+			MethodName: "DelSshKey",
+			Handler:    _Management_DelSshKey_Handler,
 		},
 		{
 			MethodName: "Shutdown",

@@ -24,7 +24,7 @@ type NeoDriver struct {
 
 func (d *NeoDriver) Open(name string) (driver.Conn, error) {
 	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(10*time.Second))
+	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (d *NeoDriver) Open(name string) (driver.Conn, error) {
 
 func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
 	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(10*time.Second))
+	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
 	if err != nil {
 		return nil, err
 	}

@@ -8,6 +8,7 @@ service Management {
     rpc ListKey(ListKeyRequest) returns (ListKeyResponse) {}
     rpc GenKey(GenKeyRequest) returns (GenKeyResponse) {}
     rpc DelKey(DelKeyRequest) returns (DelKeyResponse) {}
+    rpc ServerKey(ServerKeyRequest) returns (ServerKeyResponse) {}
     rpc ListSshKey(ListSshKeyRequest) returns (ListSshKeyResponse) {}
     rpc AddSshKey(AddSshKeyRequest) returns (AddSshKeyResponse) {}
     rpc DelSshKey(DelSshKeyRequest) returns (DelSshKeyResponse) {}
@@ -93,6 +94,16 @@ message KeyInfo {
     string id = 1;
     int64  notBefore = 3;
     int64  notAfter = 4;
+}
+
+message ServerKeyRequest {
+}
+
+message ServerKeyResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    string certificate = 4;
 }
 
 message ShutdownRequest {

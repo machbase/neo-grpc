@@ -25,6 +25,7 @@ type ManagementClient interface {
 	ListKey(ctx context.Context, in *ListKeyRequest, opts ...grpc.CallOption) (*ListKeyResponse, error)
 	GenKey(ctx context.Context, in *GenKeyRequest, opts ...grpc.CallOption) (*GenKeyResponse, error)
 	DelKey(ctx context.Context, in *DelKeyRequest, opts ...grpc.CallOption) (*DelKeyResponse, error)
+	ServerKey(ctx context.Context, in *ServerKeyRequest, opts ...grpc.CallOption) (*ServerKeyResponse, error)
 	ListSshKey(ctx context.Context, in *ListSshKeyRequest, opts ...grpc.CallOption) (*ListSshKeyResponse, error)
 	AddSshKey(ctx context.Context, in *AddSshKeyRequest, opts ...grpc.CallOption) (*AddSshKeyResponse, error)
 	DelSshKey(ctx context.Context, in *DelSshKeyRequest, opts ...grpc.CallOption) (*DelSshKeyResponse, error)
@@ -60,6 +61,15 @@ func (c *managementClient) GenKey(ctx context.Context, in *GenKeyRequest, opts .
 func (c *managementClient) DelKey(ctx context.Context, in *DelKeyRequest, opts ...grpc.CallOption) (*DelKeyResponse, error) {
 	out := new(DelKeyResponse)
 	err := c.cc.Invoke(ctx, "/mgmt.Management/DelKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) ServerKey(ctx context.Context, in *ServerKeyRequest, opts ...grpc.CallOption) (*ServerKeyResponse, error) {
+	out := new(ServerKeyResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/ServerKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,6 +119,7 @@ type ManagementServer interface {
 	ListKey(context.Context, *ListKeyRequest) (*ListKeyResponse, error)
 	GenKey(context.Context, *GenKeyRequest) (*GenKeyResponse, error)
 	DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error)
+	ServerKey(context.Context, *ServerKeyRequest) (*ServerKeyResponse, error)
 	ListSshKey(context.Context, *ListSshKeyRequest) (*ListSshKeyResponse, error)
 	AddSshKey(context.Context, *AddSshKeyRequest) (*AddSshKeyResponse, error)
 	DelSshKey(context.Context, *DelSshKeyRequest) (*DelSshKeyResponse, error)
@@ -128,6 +139,9 @@ func (UnimplementedManagementServer) GenKey(context.Context, *GenKeyRequest) (*G
 }
 func (UnimplementedManagementServer) DelKey(context.Context, *DelKeyRequest) (*DelKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelKey not implemented")
+}
+func (UnimplementedManagementServer) ServerKey(context.Context, *ServerKeyRequest) (*ServerKeyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ServerKey not implemented")
 }
 func (UnimplementedManagementServer) ListSshKey(context.Context, *ListSshKeyRequest) (*ListSshKeyResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListSshKey not implemented")
@@ -204,6 +218,24 @@ func _Management_DelKey_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ManagementServer).DelKey(ctx, req.(*DelKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_ServerKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ServerKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).ServerKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/ServerKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).ServerKey(ctx, req.(*ServerKeyRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -298,6 +330,10 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelKey",
 			Handler:    _Management_DelKey_Handler,
+		},
+		{
+			MethodName: "ServerKey",
+			Handler:    _Management_ServerKey_Handler,
 		},
 		{
 			MethodName: "ListSshKey",

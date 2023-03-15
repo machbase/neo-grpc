@@ -22,7 +22,6 @@ service Machbase {
 message AppenderRequest {
     string tableName = 1;
     string timeformat = 2;
-    string tz = 3;
 }
 
 message AppenderResponse {

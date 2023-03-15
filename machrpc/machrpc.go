@@ -491,7 +491,7 @@ func scan(src []any, dst []any) error {
 //	app, _ := client.Appender("MYTABLE")
 //	defer app.Close()
 //	app.Append("name", time.Now(), 3.14)
-func (client *Client) Appender(tableName string) (spi.Appender, error) {
+func (client *Client) Appender(tableName string, opts ...spi.AppendOption) (spi.Appender, error) {
 	var ctx0 context.Context
 	if client.appendTimeout > 0 {
 		_ctx, _cf := context.WithTimeout(context.Background(), client.appendTimeout)
@@ -501,7 +501,21 @@ func (client *Client) Appender(tableName string) (spi.Appender, error) {
 		ctx0 = context.Background()
 	}
 
-	openRsp, err := client.cli.Appender(ctx0, &AppenderRequest{TableName: tableName})
+	timeformat := "ns"
+
+	for _, opt := range opts {
+		switch v := opt.(type) {
+		default:
+			timeformat = "ns"
+		case spi.AppendTimeformatOption:
+			timeformat = string(v)
+		}
+	}
+
+	openRsp, err := client.cli.Appender(ctx0, &AppenderRequest{
+		TableName:  tableName,
+		Timeformat: timeformat,
+	})
 	if err != nil {
 		return nil, errors.Wrap(err, "Appender")
 	}

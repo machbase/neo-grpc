@@ -24,6 +24,14 @@ func ConvertAnyToPb(params []any) ([]*anypb.Any, error) {
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
 		case int:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
+		case *int8:
+			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
+		case int8:
+			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
+		case *int16:
+			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
+		case int16:
+			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
 		case *int32:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(*v))
 		case int32:

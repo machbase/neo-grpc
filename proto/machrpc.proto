@@ -16,6 +16,7 @@ service Machbase {
     rpc Appender(AppenderRequest) returns (AppenderResponse){}
     rpc Append(stream AppendData) returns(AppendDone) {}
     rpc Explain(ExplainRequest) returns(ExplainResponse) {}
+    rpc UserAuth(UserAuthRequest) returns(UserAuthResponse) {}
     rpc GetServerInfo(ServerInfoRequest) returns (ServerInfo) {}
 }
 
@@ -122,6 +123,17 @@ message RowsFetchResponse {
 }
 
 message RowsCloseResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message UserAuthRequest {
+    string loginName = 1;
+    string password = 2;
+}
+
+message UserAuthResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;

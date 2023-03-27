@@ -31,6 +31,7 @@ type MachbaseClient interface {
 	Appender(ctx context.Context, in *AppenderRequest, opts ...grpc.CallOption) (*AppenderResponse, error)
 	Append(ctx context.Context, opts ...grpc.CallOption) (Machbase_AppendClient, error)
 	Explain(ctx context.Context, in *ExplainRequest, opts ...grpc.CallOption) (*ExplainResponse, error)
+	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	GetServerInfo(ctx context.Context, in *ServerInfoRequest, opts ...grpc.CallOption) (*ServerInfo, error)
 }
 
@@ -148,6 +149,15 @@ func (c *machbaseClient) Explain(ctx context.Context, in *ExplainRequest, opts .
 	return out, nil
 }
 
+func (c *machbaseClient) UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error) {
+	out := new(UserAuthResponse)
+	err := c.cc.Invoke(ctx, "/machrpc.Machbase/UserAuth", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *machbaseClient) GetServerInfo(ctx context.Context, in *ServerInfoRequest, opts ...grpc.CallOption) (*ServerInfo, error) {
 	out := new(ServerInfo)
 	err := c.cc.Invoke(ctx, "/machrpc.Machbase/GetServerInfo", in, out, opts...)
@@ -170,6 +180,7 @@ type MachbaseServer interface {
 	Appender(context.Context, *AppenderRequest) (*AppenderResponse, error)
 	Append(Machbase_AppendServer) error
 	Explain(context.Context, *ExplainRequest) (*ExplainResponse, error)
+	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
 	GetServerInfo(context.Context, *ServerInfoRequest) (*ServerInfo, error)
 	mustEmbedUnimplementedMachbaseServer()
 }
@@ -204,6 +215,9 @@ func (UnimplementedMachbaseServer) Append(Machbase_AppendServer) error {
 }
 func (UnimplementedMachbaseServer) Explain(context.Context, *ExplainRequest) (*ExplainResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Explain not implemented")
+}
+func (UnimplementedMachbaseServer) UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UserAuth not implemented")
 }
 func (UnimplementedMachbaseServer) GetServerInfo(context.Context, *ServerInfoRequest) (*ServerInfo, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServerInfo not implemented")
@@ -391,6 +405,24 @@ func _Machbase_Explain_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Machbase_UserAuth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UserAuthRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).UserAuth(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/machrpc.Machbase/UserAuth",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).UserAuth(ctx, req.(*UserAuthRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Machbase_GetServerInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ServerInfoRequest)
 	if err := dec(in); err != nil {
@@ -447,6 +479,10 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Explain",
 			Handler:    _Machbase_Explain_Handler,
+		},
+		{
+			MethodName: "UserAuth",
+			Handler:    _Machbase_UserAuth_Handler,
 		},
 		{
 			MethodName: "GetServerInfo",

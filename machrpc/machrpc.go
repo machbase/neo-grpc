@@ -69,6 +69,20 @@ func (client *Client) Disconnect() {
 	client.cli = nil
 }
 
+func (client *Client) UserAuth(user string, password string) (bool, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &UserAuthRequest{LoginName: user, Password: password}
+	rsp, err := client.cli.UserAuth(ctx, req)
+	if err != nil {
+		return false, err
+	}
+	if !rsp.Success {
+		return false, errors.New(rsp.Reason)
+	}
+	return true, nil
+}
+
 // GetServerInfo invoke gRPC call to get ServerInfo
 func (client *Client) GetServerInfo() (*spi.ServerInfo, error) {
 	ctx, cancelFunc := client.queryContext()

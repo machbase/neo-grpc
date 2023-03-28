@@ -43,6 +43,8 @@ message AppendDone {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
+    int64 successCount = 4;
+    int64 failCount = 5;
 }
 
 message ExplainRequest {

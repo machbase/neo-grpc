@@ -3,7 +3,7 @@ module github.com/machbase/neo-grpc
 go 1.19
 
 require (
-	github.com/machbase/neo-spi v1.0.4-0.20230327035314-c2911a85d44d
+	github.com/machbase/neo-spi v1.1.0
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1

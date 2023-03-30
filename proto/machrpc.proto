@@ -7,6 +7,7 @@ option go_package = "github.com/machbase/neo-grpc/machrpc";
 import "google/protobuf/any.proto";
 
 service Machbase {
+    rpc Ping(PingRequest) returns(PingResponse) {}
     rpc Exec(ExecRequest) returns(ExecResponse) {}
     rpc QueryRow(QueryRowRequest) returns(QueryRowResponse) {}
     rpc Query(QueryRequest) returns(QueryResponse) {}
@@ -18,6 +19,17 @@ service Machbase {
     rpc Explain(ExplainRequest) returns(ExplainResponse) {}
     rpc UserAuth(UserAuthRequest) returns(UserAuthResponse) {}
     rpc GetServerInfo(ServerInfoRequest) returns (ServerInfo) {}
+}
+
+message PingRequest {
+    int64 token = 1;
+}
+
+message PingResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    int64 token = 4;
 }
 
 message AppenderRequest {

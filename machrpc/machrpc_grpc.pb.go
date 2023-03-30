@@ -22,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MachbaseClient interface {
+	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
 	QueryRow(ctx context.Context, in *QueryRowRequest, opts ...grpc.CallOption) (*QueryRowResponse, error)
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
@@ -41,6 +42,15 @@ type machbaseClient struct {
 
 func NewMachbaseClient(cc grpc.ClientConnInterface) MachbaseClient {
 	return &machbaseClient{cc}
+}
+
+func (c *machbaseClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
+	out := new(PingResponse)
+	err := c.cc.Invoke(ctx, "/machrpc.Machbase/Ping", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *machbaseClient) Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error) {
@@ -171,6 +181,7 @@ func (c *machbaseClient) GetServerInfo(ctx context.Context, in *ServerInfoReques
 // All implementations must embed UnimplementedMachbaseServer
 // for forward compatibility
 type MachbaseServer interface {
+	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
 	QueryRow(context.Context, *QueryRowRequest) (*QueryRowResponse, error)
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
@@ -189,6 +200,9 @@ type MachbaseServer interface {
 type UnimplementedMachbaseServer struct {
 }
 
+func (UnimplementedMachbaseServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
 func (UnimplementedMachbaseServer) Exec(context.Context, *ExecRequest) (*ExecResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exec not implemented")
 }
@@ -233,6 +247,24 @@ type UnsafeMachbaseServer interface {
 
 func RegisterMachbaseServer(s grpc.ServiceRegistrar, srv MachbaseServer) {
 	s.RegisterService(&Machbase_ServiceDesc, srv)
+}
+
+func _Machbase_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).Ping(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/machrpc.Machbase/Ping",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).Ping(ctx, req.(*PingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Machbase_Exec_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -448,6 +480,10 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "machrpc.Machbase",
 	HandlerType: (*MachbaseServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Ping",
+			Handler:    _Machbase_Ping_Handler,
+		},
 		{
 			MethodName: "Exec",
 			Handler:    _Machbase_Exec_Handler,

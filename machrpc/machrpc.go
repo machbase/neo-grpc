@@ -69,6 +69,21 @@ func (client *Client) Disconnect() {
 	client.cli = nil
 }
 
+func (client *Client) Ping() (time.Duration, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	tick := time.Now()
+	req := &PingRequest{Token: tick.UnixNano()}
+	rsp, err := client.cli.Ping(ctx, req)
+	if err != nil {
+		return time.Since(tick), err
+	}
+	if !rsp.Success {
+		return time.Since(tick), errors.New(rsp.Reason)
+	}
+	return time.Since(tick), nil
+}
+
 func (client *Client) UserAuth(user string, password string) (bool, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()

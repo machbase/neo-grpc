@@ -126,3 +126,99 @@ func ConvertPbToAny(pbvals []*anypb.Any) []any {
 	}
 	return vals
 }
+
+func ConvertAnyToPbTuple(params []any) ([]*AppendDatum, error) {
+	tuple := make([]*AppendDatum, len(params))
+	for i, p := range params {
+		if p == nil {
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VNull{VNull: true}}
+			continue
+		}
+		switch v := p.(type) {
+		case *int:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(*v)}}
+		case int:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(v)}}
+		case *int8:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(*v)}}
+		case int8:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(v)}}
+		case *int16:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(*v)}}
+		case int16:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: int32(v)}}
+		case *int32:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: *v}}
+		case int32:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt32{VInt32: v}}
+		case *int64:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt64{VInt64: *v}}
+		case int64:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VInt64{VInt64: v}}
+		case *float32:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VFloat{VFloat: *v}}
+		case float32:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VFloat{VFloat: v}}
+		case *float64:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VDouble{VDouble: *v}}
+		case float64:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VDouble{VDouble: v}}
+		case *string:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VString{VString: *v}}
+		case string:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VString{VString: v}}
+		case *bool:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VBool{VBool: *v}}
+		case bool:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VBool{VBool: v}}
+		case []byte:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VBytes{VBytes: v}}
+		case *net.IP:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VIp{VIp: v.String()}}
+		case net.IP:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VIp{VIp: v.String()}}
+		case *time.Time:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VTime{VTime: v.UnixNano()}}
+		case time.Time:
+			tuple[i] = &AppendDatum{Value: &AppendDatum_VTime{VTime: v.UnixNano()}}
+		default:
+			return nil, fmt.Errorf("unsupported params[%d] type %T", i, p)
+		}
+	}
+	return tuple, nil
+}
+
+func ConvertPbTupleToAny(tuple []*AppendDatum) ([]any, error) {
+	values := make([]any, len(tuple))
+	for i, d := range tuple {
+		switch v := d.Value.(type) {
+		case *AppendDatum_VInt32:
+			values[i] = v.VInt32
+		case *AppendDatum_VUint32:
+			values[i] = v.VUint32
+		case *AppendDatum_VInt64:
+			values[i] = v.VInt64
+		case *AppendDatum_VUint64:
+			values[i] = v.VUint64
+		case *AppendDatum_VFloat:
+			values[i] = v.VFloat
+		case *AppendDatum_VDouble:
+			values[i] = v.VDouble
+		case *AppendDatum_VString:
+			values[i] = v.VString
+		case *AppendDatum_VBool:
+			values[i] = v.VBool
+		case *AppendDatum_VBytes:
+			values[i] = v.VBytes
+		case *AppendDatum_VIp:
+			values[i] = v.VIp
+		case *AppendDatum_VTime:
+			values[i] = time.Unix(0, v.VTime)
+		case *AppendDatum_VNull:
+			values[i] = nil
+		default:
+			return nil, fmt.Errorf("unhandled datum type %T", v)
+		}
+	}
+	return values, nil
+}

@@ -49,6 +49,28 @@ message AppenderResponse {
 message AppendData {
     string handle = 1;
     repeated google.protobuf.Any params = 2;
+    repeated AppendRecord records = 3;
+}
+
+message AppendRecord {
+    repeated AppendDatum tuple = 1;
+}
+
+message AppendDatum {
+    oneof value {
+        int32   v_int32   = 1;
+        uint32  v_uint32  = 11;
+        int64   v_int64   = 2;
+        uint64  v_uint64  = 12;
+        float   v_float   = 3;
+        double  v_double  = 4;
+        string  v_string  = 5;
+        bool    v_bool    = 6;
+        bytes   v_bytes   = 7;
+        string  v_ip      = 8;
+        int64   v_time    = 9;
+        bool    v_null    = 10;
+    }
 }
 
 message AppendDone {

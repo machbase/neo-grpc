@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	spi "github.com/machbase/neo-spi"
@@ -558,13 +559,21 @@ func (client *Client) Appender(tableName string, opts ...spi.AppendOption) (spi.
 		return nil, errors.Wrap(err, "AppendClient")
 	}
 
-	return &Appender{
+	ap := &Appender{
 		client:       client,
 		appendClient: appendClient,
 		tableName:    openRsp.TableName,
 		tableType:    spi.TableType(openRsp.TableType),
 		handle:       openRsp.Handle,
-	}, nil
+	}
+	ap.bufferTicker = time.NewTicker(time.Second)
+	go func() {
+		for range ap.bufferTicker.C {
+			ap.flush(nil)
+		}
+	}()
+
+	return ap, nil
 }
 
 type Appender struct {
@@ -573,6 +582,10 @@ type Appender struct {
 	tableName    string
 	tableType    spi.TableType
 	handle       string
+
+	buffer       []*AppendRecord
+	bufferLock   sync.Mutex
+	bufferTicker *time.Ticker
 }
 
 // Close releases all resources that allocated to the Appender
@@ -580,6 +593,11 @@ func (appender *Appender) Close() (int64, int64, error) {
 	if appender.appendClient == nil {
 		return 0, 0, nil
 	}
+
+	if appender.bufferTicker != nil {
+		appender.bufferTicker.Stop()
+	}
+	appender.flush(nil)
 
 	client := appender.appendClient
 	appender.appendClient = nil
@@ -609,18 +627,43 @@ func (appender *Appender) Append(cols ...any) error {
 		return sql.ErrTxDone
 	}
 
-	params, err := ConvertAnyToPb(cols)
+	params, err := ConvertAnyToPbTuple(cols)
 	if err != nil {
 		return err
 	}
-	err = appender.appendClient.Send(&AppendData{
-		Handle: appender.handle,
-		Params: params,
-	})
+	appender.flush(&AppendRecord{Tuple: params})
 	return err
 }
 
 func (appender *Appender) Columns() (spi.Columns, error) {
 	// TODO implements
 	return nil, nil
+}
+
+// force flush if rec is nil
+// allow buffering if rec is not nil
+func (appender *Appender) flush(rec *AppendRecord) error {
+	appender.bufferLock.Lock()
+	defer appender.bufferLock.Unlock()
+
+	if rec != nil {
+		appender.buffer = append(appender.buffer, rec)
+	}
+	if len(appender.buffer) == 0 {
+		return nil
+	}
+
+	if rec != nil && len(appender.buffer) < 400 {
+		// write new record, but not enough to flush to network
+		return nil
+	}
+
+	err := appender.appendClient.Send(&AppendData{
+		Handle:  appender.handle,
+		Records: appender.buffer,
+	})
+	if err == nil {
+		appender.buffer = appender.buffer[:0]
+	}
+	return err
 }

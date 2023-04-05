@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"fmt"
 	"io"
 	"time"
 
@@ -161,17 +160,14 @@ type NeoStmt struct {
 }
 
 func (stmt *NeoStmt) Close() error {
-	fmt.Println("Close")
 	return nil
 }
 
 func (stmt *NeoStmt) NumInput() int {
-	fmt.Println("NumInput")
 	return -1
 }
 
 func (stmt *NeoStmt) Exec(args []driver.Value) (driver.Result, error) {
-	fmt.Println("Exec", len(args))
 	vals := make([]any, len(args))
 	for i := range args {
 		vals[i] = args[i]
@@ -184,7 +180,6 @@ func (stmt *NeoStmt) Exec(args []driver.Value) (driver.Result, error) {
 }
 
 func (stmt *NeoStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
-	fmt.Println("ExecContext", len(args))
 	vals := make([]any, len(args))
 	for i := range args {
 		vals[i] = args[i].Value
@@ -197,7 +192,6 @@ func (stmt *NeoStmt) ExecContext(ctx context.Context, args []driver.NamedValue) 
 }
 
 func (stmt *NeoStmt) Query(args []driver.Value) (driver.Rows, error) {
-	fmt.Println("Query", len(args))
 	vals := make([]any, len(args))
 	for i := range args {
 		vals[i] = args[i]
@@ -210,7 +204,6 @@ func (stmt *NeoStmt) Query(args []driver.Value) (driver.Rows, error) {
 }
 
 func (stmt *NeoStmt) QueryContext(ctx context.Context, args []driver.NamedValue) (driver.Rows, error) {
-	fmt.Println("QueryContext", len(args))
 	vals := make([]any, len(args))
 	for i := range args {
 		vals[i] = args[i]

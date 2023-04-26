@@ -143,7 +143,7 @@ func toSpiServerInfo(info *ServerInfo) *spi.ServerInfo {
 }
 
 // Explain retrieve execution plan of the given SQL statement.
-func (client *Client) Explain(sqlText string) (string, error) {
+func (client *Client) Explain(sqlText string, full bool) (string, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
 	req := &ExplainRequest{Sql: sqlText}

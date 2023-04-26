@@ -83,6 +83,7 @@ message AppendDone {
 
 message ExplainRequest {
     string sql = 1;
+    bool full = 2;
 }
 
 message ExplainResponse {

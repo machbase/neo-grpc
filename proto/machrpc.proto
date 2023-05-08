@@ -19,6 +19,7 @@ service Machbase {
     rpc Explain(ExplainRequest) returns(ExplainResponse) {}
     rpc UserAuth(UserAuthRequest) returns(UserAuthResponse) {}
     rpc GetServerInfo(ServerInfoRequest) returns (ServerInfo) {}
+    rpc GetServicePorts(ServicePortsRequest) returns (ServicePorts) {}
 }
 
 message PingRequest {
@@ -210,4 +211,20 @@ message Runtime {
     uint64  memHeapInUse  = 10;
     uint64  memStackSys   = 11;
     uint64  memStackInUse = 12;
+}
+
+message ServicePortsRequest {
+    string service = 1;
+}
+
+message ServicePorts {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated Port ports = 4;
+}
+
+message Port {
+    string service = 1;
+    string address = 2;
 }

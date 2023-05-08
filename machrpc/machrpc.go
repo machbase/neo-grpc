@@ -142,6 +142,24 @@ func toSpiServerInfo(info *ServerInfo) *spi.ServerInfo {
 	}
 }
 
+func (client *Client) GetServicePorts(svc string) ([]*spi.ServicePort, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &ServicePortsRequest{Service: svc}
+	rsp, err := client.cli.GetServicePorts(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	ports := []*spi.ServicePort{}
+	for _, p := range rsp.Ports {
+		ports = append(ports, &spi.ServicePort{
+			Service: p.Service, Address: p.Address,
+		})
+	}
+	return ports, nil
+}
+
 // Explain retrieve execution plan of the given SQL statement.
 func (client *Client) Explain(sqlText string, full bool) (string, error) {
 	ctx, cancelFunc := client.queryContext()

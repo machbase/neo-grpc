@@ -164,7 +164,7 @@ func (client *Client) GetServicePorts(svc string) ([]*spi.ServicePort, error) {
 func (client *Client) Explain(sqlText string, full bool) (string, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
-	req := &ExplainRequest{Sql: sqlText}
+	req := &ExplainRequest{Sql: sqlText, Full: full}
 	rsp, err := client.cli.Explain(ctx, req)
 	if err != nil {
 		return "", err

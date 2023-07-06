@@ -282,6 +282,10 @@ func (client *Client) QueryContext(ctx context.Context, sqlText string, params .
 	}
 }
 
+func (client *Client) PrepareQuery(sqlText string) (spi.Rows, error) {
+	return nil, errors.New("not implemented PrepareQuery() in client mode")
+}
+
 type Rows struct {
 	client       *Client
 	message      string
@@ -289,6 +293,10 @@ type Rows struct {
 	handle       *RowsHandle
 	values       []any
 	err          error
+}
+
+func (rows *Rows) Execute(params ...any) error {
+	return errors.New("not implemented Rows.Execute() in client mode")
 }
 
 // Close release all resources that assigned to the Rows

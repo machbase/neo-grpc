@@ -30,6 +30,10 @@ type ManagementClient interface {
 	AddSshKey(ctx context.Context, in *AddSshKeyRequest, opts ...grpc.CallOption) (*AddSshKeyResponse, error)
 	DelSshKey(ctx context.Context, in *DelSshKeyRequest, opts ...grpc.CallOption) (*DelSshKeyResponse, error)
 	Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error)
+	ListConnector(ctx context.Context, in *ListConnectorRequest, opts ...grpc.CallOption) (*ListConnectorResponse, error)
+	AddConnector(ctx context.Context, in *AddConnectorRequest, opts ...grpc.CallOption) (*AddConnectorResponse, error)
+	DelConnector(ctx context.Context, in *DelConnectorRequest, opts ...grpc.CallOption) (*DelConnectorResponse, error)
+	TestConnector(ctx context.Context, in *TestConnectorRequest, opts ...grpc.CallOption) (*TestConnectorResponse, error)
 }
 
 type managementClient struct {
@@ -112,6 +116,42 @@ func (c *managementClient) Shutdown(ctx context.Context, in *ShutdownRequest, op
 	return out, nil
 }
 
+func (c *managementClient) ListConnector(ctx context.Context, in *ListConnectorRequest, opts ...grpc.CallOption) (*ListConnectorResponse, error) {
+	out := new(ListConnectorResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/ListConnector", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) AddConnector(ctx context.Context, in *AddConnectorRequest, opts ...grpc.CallOption) (*AddConnectorResponse, error) {
+	out := new(AddConnectorResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/AddConnector", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) DelConnector(ctx context.Context, in *DelConnectorRequest, opts ...grpc.CallOption) (*DelConnectorResponse, error) {
+	out := new(DelConnectorResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/DelConnector", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) TestConnector(ctx context.Context, in *TestConnectorRequest, opts ...grpc.CallOption) (*TestConnectorResponse, error) {
+	out := new(TestConnectorResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/TestConnector", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ManagementServer is the server API for Management service.
 // All implementations must embed UnimplementedManagementServer
 // for forward compatibility
@@ -124,6 +164,10 @@ type ManagementServer interface {
 	AddSshKey(context.Context, *AddSshKeyRequest) (*AddSshKeyResponse, error)
 	DelSshKey(context.Context, *DelSshKeyRequest) (*DelSshKeyResponse, error)
 	Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error)
+	ListConnector(context.Context, *ListConnectorRequest) (*ListConnectorResponse, error)
+	AddConnector(context.Context, *AddConnectorRequest) (*AddConnectorResponse, error)
+	DelConnector(context.Context, *DelConnectorRequest) (*DelConnectorResponse, error)
+	TestConnector(context.Context, *TestConnectorRequest) (*TestConnectorResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
 
@@ -154,6 +198,18 @@ func (UnimplementedManagementServer) DelSshKey(context.Context, *DelSshKeyReques
 }
 func (UnimplementedManagementServer) Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
+}
+func (UnimplementedManagementServer) ListConnector(context.Context, *ListConnectorRequest) (*ListConnectorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListConnector not implemented")
+}
+func (UnimplementedManagementServer) AddConnector(context.Context, *AddConnectorRequest) (*AddConnectorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddConnector not implemented")
+}
+func (UnimplementedManagementServer) DelConnector(context.Context, *DelConnectorRequest) (*DelConnectorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelConnector not implemented")
+}
+func (UnimplementedManagementServer) TestConnector(context.Context, *TestConnectorRequest) (*TestConnectorResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TestConnector not implemented")
 }
 func (UnimplementedManagementServer) mustEmbedUnimplementedManagementServer() {}
 
@@ -312,6 +368,78 @@ func _Management_Shutdown_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Management_ListConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListConnectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).ListConnector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/ListConnector",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).ListConnector(ctx, req.(*ListConnectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_AddConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddConnectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).AddConnector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/AddConnector",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).AddConnector(ctx, req.(*AddConnectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_DelConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelConnectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).DelConnector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/DelConnector",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).DelConnector(ctx, req.(*DelConnectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_TestConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TestConnectorRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).TestConnector(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/TestConnector",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).TestConnector(ctx, req.(*TestConnectorRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Management_ServiceDesc is the grpc.ServiceDesc for Management service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +478,22 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Shutdown",
 			Handler:    _Management_Shutdown_Handler,
+		},
+		{
+			MethodName: "ListConnector",
+			Handler:    _Management_ListConnector_Handler,
+		},
+		{
+			MethodName: "AddConnector",
+			Handler:    _Management_AddConnector_Handler,
+		},
+		{
+			MethodName: "DelConnector",
+			Handler:    _Management_DelConnector_Handler,
+		},
+		{
+			MethodName: "TestConnector",
+			Handler:    _Management_TestConnector_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

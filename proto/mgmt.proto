@@ -13,6 +13,58 @@ service Management {
     rpc AddSshKey(AddSshKeyRequest) returns (AddSshKeyResponse) {}
     rpc DelSshKey(DelSshKeyRequest) returns (DelSshKeyResponse) {}
     rpc Shutdown(ShutdownRequest) returns (ShutdownResponse) {}
+    rpc ListConnector(ListConnectorRequest) returns (ListConnectorResponse) {}
+    rpc AddConnector(AddConnectorRequest) returns (AddConnectorResponse) {}
+    rpc DelConnector(DelConnectorRequest) returns (DelConnectorResponse) {}
+    rpc TestConnector(TestConnectorRequest) returns (TestConnectorResponse) {}
+}
+
+message ListConnectorRequest{
+}
+
+message ListConnectorResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated Connector connectors = 4;
+}
+
+message Connector {
+    string name = 1;
+    string type = 2;
+    string path = 3;
+}
+
+message AddConnectorRequest{
+    string name = 1;
+    string type = 2;
+    string path = 3;
+}
+
+message AddConnectorResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message DelConnectorRequest{
+    string name = 1;
+}
+
+message DelConnectorResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message TestConnectorRequest{
+    string name = 1;
+}
+
+message TestConnectorResponse{
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
 }
 
 message ListSshKeyRequest {

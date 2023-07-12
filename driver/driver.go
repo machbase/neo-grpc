@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"fmt"
 	"io"
-	"time"
+	"net/url"
 
 	"github.com/machbase/neo-grpc/machrpc"
 	spi "github.com/machbase/neo-spi"
@@ -21,9 +22,37 @@ type NeoDriver struct {
 	driver.DriverContext
 }
 
+var certs = map[string]string{}
+
+func RegisterServerCert(name string, path string) {
+	certs[name] = path
+}
+
+func parseDataSourceName(name string) (addr string, certPath string) {
+	u, err := url.Parse(name)
+	if err != nil {
+		return name, ""
+	}
+	addr = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
+	vals := u.Query()
+	if tlsValues, ok := vals["tls"]; ok && len(tlsValues) > 0 {
+		tlsName := tlsValues[0]
+		if path, ok := certs[tlsName]; ok {
+			return addr, path
+		}
+	}
+	return addr, ""
+}
+
 func (d *NeoDriver) Open(name string) (driver.Conn, error) {
-	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
+	addr, certPath := parseDataSourceName(name)
+	opts := []machrpc.Option{
+		machrpc.WithServer(addr),
+		machrpc.WithServerCert(certPath),
+		machrpc.WithQueryTimeout(0),
+	}
+	client := machrpc.NewClient(opts...)
+	err := client.Connect()
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +65,14 @@ func (d *NeoDriver) Open(name string) (driver.Conn, error) {
 }
 
 func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
-	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
+	addr, certPath := parseDataSourceName(name)
+	opts := []machrpc.Option{
+		machrpc.WithServer(addr),
+		machrpc.WithServerCert(certPath),
+		machrpc.WithQueryTimeout(0),
+	}
+	client := machrpc.NewClient(opts...)
+	err := client.Connect()
 	if err != nil {
 		return nil, err
 	}

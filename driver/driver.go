@@ -17,16 +17,22 @@ func init() {
 	sql.Register("machbase", &NeoDriver{})
 }
 
+var configReigstry = map[string]*DataSource{}
+
+func RegisterDataSource(name string, conf *DataSource) {
+	configReigstry[name] = conf
+}
+
+type DataSource struct {
+	ServerAddr string
+	ServerCert string
+}
+
 type NeoDriver struct {
-	driver.Driver
-	driver.DriverContext
 }
 
-var certs = map[string]string{}
-
-func RegisterServerCert(name string, path string) {
-	certs[name] = path
-}
+var _ driver.Driver = &NeoDriver{}
+var _ driver.DriverContext = &NeoDriver{}
 
 func parseDataSourceName(name string) (addr string, certPath string) {
 	u, err := url.Parse(name)
@@ -35,23 +41,31 @@ func parseDataSourceName(name string) (addr string, certPath string) {
 	}
 	addr = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
 	vals := u.Query()
-	if tlsValues, ok := vals["tls"]; ok && len(tlsValues) > 0 {
-		tlsName := tlsValues[0]
-		if path, ok := certs[tlsName]; ok {
-			return addr, path
-		}
+	if serverCerts, ok := vals["server-cert"]; ok && len(serverCerts) > 0 {
+		serverCert := serverCerts[0]
+		return addr, serverCert
 	}
 	return addr, ""
 }
 
-func (d *NeoDriver) Open(name string) (driver.Conn, error) {
-	addr, certPath := parseDataSourceName(name)
+func makeClient(dsn string) spi.DatabaseClient {
+	var conf *DataSource
+	if c, ok := configReigstry[dsn]; ok {
+		conf = c
+	} else {
+		addr, certPath := parseDataSourceName(dsn)
+		conf = &DataSource{ServerAddr: addr, ServerCert: certPath}
+	}
 	opts := []machrpc.Option{
-		machrpc.WithServer(addr),
-		machrpc.WithServerCert(certPath),
+		machrpc.WithServer(conf.ServerAddr),
+		machrpc.WithServerCert(conf.ServerCert),
 		machrpc.WithQueryTimeout(0),
 	}
-	client := machrpc.NewClient(opts...)
+	return machrpc.NewClient(opts...)
+}
+
+func (d *NeoDriver) Open(name string) (driver.Conn, error) {
+	client := makeClient(name)
 	err := client.Connect()
 	if err != nil {
 		return nil, err
@@ -65,13 +79,7 @@ func (d *NeoDriver) Open(name string) (driver.Conn, error) {
 }
 
 func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
-	addr, certPath := parseDataSourceName(name)
-	opts := []machrpc.Option{
-		machrpc.WithServer(addr),
-		machrpc.WithServerCert(certPath),
-		machrpc.WithQueryTimeout(0),
-	}
-	client := machrpc.NewClient(opts...)
+	client := makeClient(name)
 	err := client.Connect()
 	if err != nil {
 		return nil, err

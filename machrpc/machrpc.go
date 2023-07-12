@@ -13,6 +13,7 @@ import (
 	spi "github.com/machbase/neo-spi"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // Client is a convenient data type represents client side of machbase-neo.
@@ -171,12 +172,12 @@ func (client *Client) Explain(sqlText string, full bool) (string, error) {
 }
 
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{"client": "machrpc"}))
+	cancel := func() {}
 	if client.queryTimeout > 0 {
-		return context.WithTimeout(context.Background(), client.queryTimeout)
-	} else {
-		ctx := context.Background()
-		return ctx, func() {}
+		ctx, cancel = context.WithTimeout(ctx, client.queryTimeout)
 	}
+	return ctx, cancel
 }
 
 // Exec executes SQL statements that does not return result

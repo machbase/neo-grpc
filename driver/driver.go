@@ -17,6 +17,8 @@ func init() {
 	sql.Register("machbase", &NeoDriver{})
 }
 
+const Name = "machbase"
+
 var configReigstry = map[string]*DataSource{}
 
 func RegisterDataSource(name string, conf *DataSource) {

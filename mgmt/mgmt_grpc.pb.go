@@ -30,6 +30,9 @@ type ManagementClient interface {
 	AddSshKey(ctx context.Context, in *AddSshKeyRequest, opts ...grpc.CallOption) (*AddSshKeyResponse, error)
 	DelSshKey(ctx context.Context, in *DelSshKeyRequest, opts ...grpc.CallOption) (*DelSshKeyResponse, error)
 	Shutdown(ctx context.Context, in *ShutdownRequest, opts ...grpc.CallOption) (*ShutdownResponse, error)
+	ListShell(ctx context.Context, in *ListShellRequest, opts ...grpc.CallOption) (*ListShellResponse, error)
+	AddShell(ctx context.Context, in *AddShellRequest, opts ...grpc.CallOption) (*AddShellResponse, error)
+	DelShell(ctx context.Context, in *DelShellRequest, opts ...grpc.CallOption) (*DelShellResponse, error)
 }
 
 type managementClient struct {
@@ -112,6 +115,33 @@ func (c *managementClient) Shutdown(ctx context.Context, in *ShutdownRequest, op
 	return out, nil
 }
 
+func (c *managementClient) ListShell(ctx context.Context, in *ListShellRequest, opts ...grpc.CallOption) (*ListShellResponse, error) {
+	out := new(ListShellResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/ListShell", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) AddShell(ctx context.Context, in *AddShellRequest, opts ...grpc.CallOption) (*AddShellResponse, error) {
+	out := new(AddShellResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/AddShell", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) DelShell(ctx context.Context, in *DelShellRequest, opts ...grpc.CallOption) (*DelShellResponse, error) {
+	out := new(DelShellResponse)
+	err := c.cc.Invoke(ctx, "/mgmt.Management/DelShell", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ManagementServer is the server API for Management service.
 // All implementations must embed UnimplementedManagementServer
 // for forward compatibility
@@ -124,6 +154,9 @@ type ManagementServer interface {
 	AddSshKey(context.Context, *AddSshKeyRequest) (*AddSshKeyResponse, error)
 	DelSshKey(context.Context, *DelSshKeyRequest) (*DelSshKeyResponse, error)
 	Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error)
+	ListShell(context.Context, *ListShellRequest) (*ListShellResponse, error)
+	AddShell(context.Context, *AddShellRequest) (*AddShellResponse, error)
+	DelShell(context.Context, *DelShellRequest) (*DelShellResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
 
@@ -154,6 +187,15 @@ func (UnimplementedManagementServer) DelSshKey(context.Context, *DelSshKeyReques
 }
 func (UnimplementedManagementServer) Shutdown(context.Context, *ShutdownRequest) (*ShutdownResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Shutdown not implemented")
+}
+func (UnimplementedManagementServer) ListShell(context.Context, *ListShellRequest) (*ListShellResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListShell not implemented")
+}
+func (UnimplementedManagementServer) AddShell(context.Context, *AddShellRequest) (*AddShellResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddShell not implemented")
+}
+func (UnimplementedManagementServer) DelShell(context.Context, *DelShellRequest) (*DelShellResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DelShell not implemented")
 }
 func (UnimplementedManagementServer) mustEmbedUnimplementedManagementServer() {}
 
@@ -312,6 +354,60 @@ func _Management_Shutdown_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Management_ListShell_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListShellRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).ListShell(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/ListShell",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).ListShell(ctx, req.(*ListShellRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_AddShell_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddShellRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).AddShell(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/AddShell",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).AddShell(ctx, req.(*AddShellRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_DelShell_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DelShellRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).DelShell(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/mgmt.Management/DelShell",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).DelShell(ctx, req.(*DelShellRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Management_ServiceDesc is the grpc.ServiceDesc for Management service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +446,18 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Shutdown",
 			Handler:    _Management_Shutdown_Handler,
+		},
+		{
+			MethodName: "ListShell",
+			Handler:    _Management_ListShell_Handler,
+		},
+		{
+			MethodName: "AddShell",
+			Handler:    _Management_AddShell_Handler,
+		},
+		{
+			MethodName: "DelShell",
+			Handler:    _Management_DelShell_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

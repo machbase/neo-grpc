@@ -28,6 +28,8 @@ func RegisterDataSource(name string, conf *DataSource) {
 type DataSource struct {
 	ServerAddr string
 	ServerCert string
+	ClientKey  string
+	ClientCert string
 }
 
 type NeoDriver struct {
@@ -59,7 +61,8 @@ func makeClient(dsn string) spi.DatabaseClient {
 		conf = &DataSource{ServerAddr: addr, ServerCert: certPath}
 	}
 	opts := []machrpc.Option{
-		machrpc.WithServer(conf.ServerAddr, conf.ServerCert),
+		machrpc.WithServer(conf.ServerAddr),
+		machrpc.WithCertificate(conf.ClientKey, conf.ClientCert, conf.ServerCert),
 		machrpc.WithQueryTimeout(0),
 	}
 	return machrpc.NewClient(opts...)

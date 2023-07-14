@@ -28,6 +28,8 @@ type Client struct {
 
 	serverAddr    string
 	serverCert    string
+	certPath      string
+	keyPath       string
 	closeTimeout  time.Duration
 	queryTimeout  time.Duration
 	appendTimeout time.Duration
@@ -51,7 +53,7 @@ func (client *Client) Connect() error {
 	if client.serverAddr == "" {
 		return errors.New("server address is not specified")
 	}
-	conn, err := MakeGrpcTlsConn(client.serverAddr, client.serverCert)
+	conn, err := MakeGrpcTlsConn(client.serverAddr, client.keyPath, client.certPath, client.serverCert)
 	if err != nil {
 		return errors.Wrap(err, "NewClient")
 	}

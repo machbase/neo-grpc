@@ -14,14 +14,36 @@ import (
 )
 
 func MakeGrpcInsecureConn(addr string) (grpc.ClientConnInterface, error) {
-	return makeGrpcConn(addr, "")
+	return MakeGrpcConn(addr, nil)
 }
 
-func MakeGrpcTlsConn(addr string, caCertPath string) (grpc.ClientConnInterface, error) {
-	return makeGrpcConn(addr, caCertPath)
+func MakeGrpcTlsConn(addr string, keyPath string, certPath string, caCertPath string) (grpc.ClientConnInterface, error) {
+	cert, err := os.ReadFile(caCertPath)
+	if err != nil {
+		return nil, err
+	}
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(cert) {
+		return nil, fmt.Errorf("fail to load server CA cert")
+	}
+
+	dir := filepath.Dir(caCertPath)
+	keyFile := filepath.Join(dir, "machbase_key.pem")
+
+	tlsCert, err := tls.LoadX509KeyPair(caCertPath, keyFile)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig := &tls.Config{
+		RootCAs:            certPool,
+		Certificates:       []tls.Certificate{tlsCert},
+		InsecureSkipVerify: true,
+	}
+
+	return MakeGrpcConn(addr, tlsConfig)
 }
 
-func makeGrpcConn(addr string, caCertPath string) (grpc.ClientConnInterface, error) {
+func MakeGrpcConn(addr string, tlsConfig *tls.Config) (grpc.ClientConnInterface, error) {
 	pwd, _ := os.Getwd()
 	if strings.HasPrefix(addr, "unix://../") {
 		addr = fmt.Sprintf("unix:///%s", filepath.Join(filepath.Dir(pwd), addr[len("unix://../"):]))
@@ -38,33 +60,13 @@ func makeGrpcConn(addr string, caCertPath string) (grpc.ClientConnInterface, err
 		addr = strings.TrimPrefix(addr, "tcp://")
 	}
 
-	if caCertPath == "" {
+	if tlsConfig == nil {
 		return grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
-		tlsCreds, err := loadTlsCreds(caCertPath)
-		if err != nil {
-			return nil, err
-		}
-		conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(tlsCreds))
+		conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 		if err != nil {
 			return nil, err
 		}
 		return conn, nil
 	}
-}
-
-func loadTlsCreds(certPath string) (credentials.TransportCredentials, error) {
-	cert, err := os.ReadFile(certPath)
-	if err != nil {
-		return nil, err
-	}
-	certPool := x509.NewCertPool()
-	if !certPool.AppendCertsFromPEM(cert) {
-		return nil, fmt.Errorf("fail to load server CA cert")
-	}
-	tlsConfig := &tls.Config{
-		RootCAs:            certPool,
-		InsecureSkipVerify: true,
-	}
-	return credentials.NewTLS(tlsConfig), nil
 }

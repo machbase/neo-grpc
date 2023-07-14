@@ -4,15 +4,10 @@ import "time"
 
 type Option func(*Client)
 
-func WithServer(addr string) Option {
+func WithServer(addr string, serverCertPath string) Option {
 	return func(c *Client) {
 		c.serverAddr = addr
-	}
-}
-
-func WithServerCert(path string) Option {
-	return func(c *Client) {
-		c.serverCert = path
+		c.serverCert = serverCertPath
 	}
 }
 

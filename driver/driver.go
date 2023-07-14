@@ -59,8 +59,7 @@ func makeClient(dsn string) spi.DatabaseClient {
 		conf = &DataSource{ServerAddr: addr, ServerCert: certPath}
 	}
 	opts := []machrpc.Option{
-		machrpc.WithServer(conf.ServerAddr),
-		machrpc.WithServerCert(conf.ServerCert),
+		machrpc.WithServer(conf.ServerAddr, conf.ServerCert),
 		machrpc.WithQueryTimeout(0),
 	}
 	return machrpc.NewClient(opts...)

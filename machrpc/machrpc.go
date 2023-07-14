@@ -18,7 +18,10 @@ import (
 
 // Client is a convenient data type represents client side of machbase-neo.
 //
-//	client := machrpc.NewClient()
+//	client := machrpc.NewClient(WithServer(serverAddr, "path/to/server_cert.pem"))
+//
+// serverAddr can be tcp://ipaddr:port or unix://path.
+// The path of unix domain socket can be absolute/releative path.
 type Client struct {
 	conn grpc.ClientConnInterface
 	cli  MachbaseClient
@@ -43,10 +46,7 @@ func NewClient(opts ...Option) spi.DatabaseClient {
 	return client
 }
 
-// Connect make a connection to the server with the given address.
-//
-// serverAddr can be tcp://ipaddr:port or unix://path.
-// The path of unix domain socket can be absolute/releative path.
+// Connect make a connection to the server
 func (client *Client) Connect() error {
 	if client.serverAddr == "" {
 		return errors.New("server address is not specified")

@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"fmt"
 	"io"
-	"time"
+	"net/url"
 
 	"github.com/machbase/neo-grpc/machrpc"
 	spi "github.com/machbase/neo-spi"
@@ -16,14 +17,60 @@ func init() {
 	sql.Register("machbase", &NeoDriver{})
 }
 
+const Name = "machbase"
+
+var configReigstry = map[string]*DataSource{}
+
+func RegisterDataSource(name string, conf *DataSource) {
+	configReigstry[name] = conf
+}
+
+type DataSource struct {
+	ServerAddr string
+	ServerCert string
+	ClientKey  string
+	ClientCert string
+}
+
 type NeoDriver struct {
-	driver.Driver
-	driver.DriverContext
+}
+
+var _ driver.Driver = &NeoDriver{}
+var _ driver.DriverContext = &NeoDriver{}
+
+func parseDataSourceName(name string) (addr string, certPath string) {
+	u, err := url.Parse(name)
+	if err != nil {
+		return name, ""
+	}
+	addr = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
+	vals := u.Query()
+	if serverCerts, ok := vals["server-cert"]; ok && len(serverCerts) > 0 {
+		serverCert := serverCerts[0]
+		return addr, serverCert
+	}
+	return addr, ""
+}
+
+func makeClient(dsn string) spi.DatabaseClient {
+	var conf *DataSource
+	if c, ok := configReigstry[dsn]; ok {
+		conf = c
+	} else {
+		addr, certPath := parseDataSourceName(dsn)
+		conf = &DataSource{ServerAddr: addr, ServerCert: certPath}
+	}
+	opts := []machrpc.Option{
+		machrpc.WithServer(conf.ServerAddr),
+		machrpc.WithCertificate(conf.ClientKey, conf.ClientCert, conf.ServerCert),
+		machrpc.WithQueryTimeout(0),
+	}
+	return machrpc.NewClient(opts...)
 }
 
 func (d *NeoDriver) Open(name string) (driver.Conn, error) {
-	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
+	client := makeClient(name)
+	err := client.Connect()
 	if err != nil {
 		return nil, err
 	}
@@ -36,8 +83,8 @@ func (d *NeoDriver) Open(name string) (driver.Conn, error) {
 }
 
 func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
-	client := machrpc.NewClient()
-	err := client.Connect(name, machrpc.QueryTimeout(0*time.Second))
+	client := makeClient(name)
+	err := client.Connect()
 	if err != nil {
 		return nil, err
 	}

@@ -13,54 +13,52 @@ import (
 	spi "github.com/machbase/neo-spi"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // Client is a convenient data type represents client side of machbase-neo.
 //
-//	client := machrpc.NewClient()
+//	client := machrpc.NewClient(WithServer(serverAddr, "path/to/server_cert.pem"))
+//
+// serverAddr can be tcp://ipaddr:port or unix://path.
+// The path of unix domain socket can be absolute/releative path.
 type Client struct {
 	conn grpc.ClientConnInterface
 	cli  MachbaseClient
 
+	serverAddr    string
+	serverCert    string
+	certPath      string
+	keyPath       string
 	closeTimeout  time.Duration
 	queryTimeout  time.Duration
 	appendTimeout time.Duration
 }
 
 // NewClient creates new instance of Client.
-func NewClient() spi.DatabaseClient {
+func NewClient(opts ...Option) spi.DatabaseClient {
 	client := &Client{
 		closeTimeout:  3 * time.Second,
 		queryTimeout:  0,
 		appendTimeout: 3 * time.Second,
 	}
+	for _, o := range opts {
+		o(client)
+	}
 	return client
 }
 
-// Connect make a connection to the server with the given address.
-//
-// serverAddr can be tcp://ipaddr:port or unix://path.
-// The path of unix domain socket can be absolute/releative path.
-func (client *Client) Connect(serverAddr string, opts ...any) error {
-	conn, err := MakeGrpcConn(serverAddr)
+// Connect make a connection to the server
+func (client *Client) Connect() error {
+	if client.serverAddr == "" {
+		return errors.New("server address is not specified")
+	}
+	conn, err := MakeGrpcTlsConn(client.serverAddr, client.keyPath, client.certPath, client.serverCert)
 	if err != nil {
 		return errors.Wrap(err, "NewClient")
 	}
 	client.conn = conn
 	client.cli = NewMachbaseClient(conn)
-
-	for _, opt := range opts {
-		switch o := opt.(type) {
-		case *queryTimeoutOption:
-			client.queryTimeout = o.timeout
-		case *closeTimeoutOption:
-			client.closeTimeout = o.timeout
-		case *appendTimeoutOption:
-			client.appendTimeout = o.timeout
-		default:
-			return fmt.Errorf("unknown option %+v", o)
-		}
-	}
 	return nil
 }
 
@@ -176,12 +174,12 @@ func (client *Client) Explain(sqlText string, full bool) (string, error) {
 }
 
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {
+	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{"client": "machrpc"}))
+	cancel := func() {}
 	if client.queryTimeout > 0 {
-		return context.WithTimeout(context.Background(), client.queryTimeout)
-	} else {
-		ctx := context.Background()
-		return ctx, func() {}
+		ctx, cancel = context.WithTimeout(ctx, client.queryTimeout)
 	}
+	return ctx, cancel
 }
 
 // Exec executes SQL statements that does not return result

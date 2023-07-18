@@ -13,10 +13,50 @@ service Management {
     rpc AddSshKey(AddSshKeyRequest) returns (AddSshKeyResponse) {}
     rpc DelSshKey(DelSshKeyRequest) returns (DelSshKeyResponse) {}
     rpc Shutdown(ShutdownRequest) returns (ShutdownResponse) {}
+    rpc ListShell(ListShellRequest) returns (ListShellResponse) {}
+    rpc AddShell(AddShellRequest) returns (AddShellResponse) {}
+    rpc DelShell(DelShellRequest) returns (DelShellResponse) {}
     rpc ListConnector(ListConnectorRequest) returns (ListConnectorResponse) {}
     rpc AddConnector(AddConnectorRequest) returns (AddConnectorResponse) {}
     rpc DelConnector(DelConnectorRequest) returns (DelConnectorResponse) {}
     rpc TestConnector(TestConnectorRequest) returns (TestConnectorResponse) {}
+}
+
+message ListShellRequest{
+}
+
+message ListShellResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated ShellDefinition shells = 4;
+}
+
+message ShellDefinition {
+    string id = 1;
+    string name = 2;
+    string command = 3;
+}
+
+message AddShellRequest{
+    string name = 1;
+    string command = 2;
+}
+
+message AddShellResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message DelShellRequest{
+    string id = 1;
+}
+
+message DelShellResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
 }
 
 message ListConnectorRequest{

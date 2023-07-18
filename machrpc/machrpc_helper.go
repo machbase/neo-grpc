@@ -60,7 +60,7 @@ func MakeGrpcConn(addr string, tlsConfig *tls.Config) (grpc.ClientConnInterface,
 		addr = strings.TrimPrefix(addr, "tcp://")
 	}
 
-	if tlsConfig == nil {
+	if tlsConfig == nil || strings.HasPrefix(addr, "unix://") {
 		return grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	} else {
 		conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))

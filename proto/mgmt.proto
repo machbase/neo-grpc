@@ -29,13 +29,14 @@ message ListShellResponse {
 }
 
 message ShellDefinition {
-    string name = 1;
-    repeated string args = 2;
+    string id = 1;
+    string name = 2;
+    string command = 3;
 }
 
 message AddShellRequest{
     string name = 1;
-    repeated string args = 2;
+    string command = 2;
 }
 
 message AddShellResponse {
@@ -45,7 +46,7 @@ message AddShellResponse {
 }
 
 message DelShellRequest{
-    string name = 1;
+    string id = 1;
 }
 
 message DelShellResponse {

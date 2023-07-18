@@ -1,21 +1,50 @@
 package machrpc
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	grpc "google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func MakeGrpcConn(addr string) (grpc.ClientConnInterface, error) {
-	var conn *grpc.ClientConn
-	var err error
+func MakeGrpcInsecureConn(addr string) (grpc.ClientConnInterface, error) {
+	return MakeGrpcConn(addr, nil)
+}
 
+func MakeGrpcTlsConn(addr string, keyPath string, certPath string, caCertPath string) (grpc.ClientConnInterface, error) {
+	cert, err := os.ReadFile(caCertPath)
+	if err != nil {
+		return nil, err
+	}
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(cert) {
+		return nil, fmt.Errorf("fail to load server CA cert")
+	}
+
+	dir := filepath.Dir(caCertPath)
+	keyFile := filepath.Join(dir, "machbase_key.pem")
+
+	tlsCert, err := tls.LoadX509KeyPair(caCertPath, keyFile)
+	if err != nil {
+		return nil, err
+	}
+	tlsConfig := &tls.Config{
+		RootCAs:            certPool,
+		Certificates:       []tls.Certificate{tlsCert},
+		InsecureSkipVerify: true,
+	}
+
+	return MakeGrpcConn(addr, tlsConfig)
+}
+
+func MakeGrpcConn(addr string, tlsConfig *tls.Config) (grpc.ClientConnInterface, error) {
 	pwd, _ := os.Getwd()
-
 	if strings.HasPrefix(addr, "unix://../") {
 		addr = fmt.Sprintf("unix:///%s", filepath.Join(filepath.Dir(pwd), addr[len("unix://../"):]))
 	} else if strings.HasPrefix(addr, "../") {
@@ -30,6 +59,14 @@ func MakeGrpcConn(addr string) (grpc.ClientConnInterface, error) {
 		addr = strings.TrimPrefix(addr, "http://")
 		addr = strings.TrimPrefix(addr, "tcp://")
 	}
-	conn, err = grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	return conn, err
+
+	if tlsConfig == nil || strings.HasPrefix(addr, "unix://") {
+		return grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	} else {
+		conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
+		if err != nil {
+			return nil, err
+		}
+		return conn, nil
+	}
 }

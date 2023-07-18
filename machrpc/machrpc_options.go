@@ -2,36 +2,36 @@ package machrpc
 
 import "time"
 
-type ClientOption interface {
-	clientoption()
+type Option func(*Client)
+
+func WithServer(addr string) Option {
+	return func(c *Client) {
+		c.serverAddr = addr
+	}
 }
 
-type queryTimeoutOption struct {
-	timeout time.Duration
+func WithCertificate(clientKeyPath string, clientCertPath string, serverCertPath string) Option {
+	return func(c *Client) {
+		c.certPath = clientCertPath
+		c.keyPath = clientKeyPath
+		c.serverCert = serverCertPath
+	}
 }
 
-func (o *queryTimeoutOption) clientoption() {}
-
-type closeTimeoutOption struct {
-	timeout time.Duration
+func WithQueryTimeout(timeout time.Duration) Option {
+	return func(c *Client) {
+		c.queryTimeout = timeout
+	}
 }
 
-func (o *closeTimeoutOption) clientoption() {}
-
-type appendTimeoutOption struct {
-	timeout time.Duration
+func WithCloseTimeout(timeout time.Duration) Option {
+	return func(c *Client) {
+		c.closeTimeout = timeout
+	}
 }
 
-func (o *appendTimeoutOption) clientoption() {}
-
-func CloseTimeout(timeout time.Duration) ClientOption {
-	return &closeTimeoutOption{timeout: timeout}
-}
-
-func QueryTimeout(timeout time.Duration) ClientOption {
-	return &queryTimeoutOption{timeout: timeout}
-}
-
-func AppendTimeout(timeout time.Duration) ClientOption {
-	return &appendTimeoutOption{timeout: timeout}
+func WithAppendTimeout(timeout time.Duration) Option {
+	return func(c *Client) {
+		c.appendTimeout = timeout
+	}
 }

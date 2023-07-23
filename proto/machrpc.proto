@@ -237,6 +237,7 @@ message Port {
 message ConnectorExecRequest {
     string name = 1;
     string command = 2;
+    repeated Datum params = 3;
 }
 
 message ConnectorExecResponse {

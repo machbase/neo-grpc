@@ -255,6 +255,8 @@ message ConnectorResult {
 message ConnectorResultField {
     string name = 1;
     string type = 2;
+    int32 size = 3;
+    int32 length = 4;
 }
 
 message ConnectorResultFetchResponse {

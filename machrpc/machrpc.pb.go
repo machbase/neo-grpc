@@ -2196,629 +2196,6 @@ func (x *Port) GetAddress() string {
 	return ""
 }
 
-type ConnectorExecRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name    string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Command string   `protobuf:"bytes,2,opt,name=command,proto3" json:"command,omitempty"`
-	Params  []*Datum `protobuf:"bytes,3,rep,name=params,proto3" json:"params,omitempty"`
-}
-
-func (x *ConnectorExecRequest) Reset() {
-	*x = ConnectorExecRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[30]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorExecRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorExecRequest) ProtoMessage() {}
-
-func (x *ConnectorExecRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[30]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorExecRequest.ProtoReflect.Descriptor instead.
-func (*ConnectorExecRequest) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{30}
-}
-
-func (x *ConnectorExecRequest) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ConnectorExecRequest) GetCommand() string {
-	if x != nil {
-		return x.Command
-	}
-	return ""
-}
-
-func (x *ConnectorExecRequest) GetParams() []*Datum {
-	if x != nil {
-		return x.Params
-	}
-	return nil
-}
-
-type ConnectorExecResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Success bool             `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Reason  string           `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
-	Elapse  string           `protobuf:"bytes,3,opt,name=elapse,proto3" json:"elapse,omitempty"`
-	Result  *ConnectorResult `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
-}
-
-func (x *ConnectorExecResponse) Reset() {
-	*x = ConnectorExecResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[31]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorExecResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorExecResponse) ProtoMessage() {}
-
-func (x *ConnectorExecResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[31]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorExecResponse.ProtoReflect.Descriptor instead.
-func (*ConnectorExecResponse) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{31}
-}
-
-func (x *ConnectorExecResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *ConnectorExecResponse) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-func (x *ConnectorExecResponse) GetElapse() string {
-	if x != nil {
-		return x.Elapse
-	}
-	return ""
-}
-
-func (x *ConnectorExecResponse) GetResult() *ConnectorResult {
-	if x != nil {
-		return x.Result
-	}
-	return nil
-}
-
-type ConnectorResult struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Handle string                  `protobuf:"bytes,1,opt,name=handle,proto3" json:"handle,omitempty"`
-	Fields []*ConnectorResultField `protobuf:"bytes,4,rep,name=fields,proto3" json:"fields,omitempty"`
-}
-
-func (x *ConnectorResult) Reset() {
-	*x = ConnectorResult{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[32]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorResult) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorResult) ProtoMessage() {}
-
-func (x *ConnectorResult) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[32]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorResult.ProtoReflect.Descriptor instead.
-func (*ConnectorResult) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{32}
-}
-
-func (x *ConnectorResult) GetHandle() string {
-	if x != nil {
-		return x.Handle
-	}
-	return ""
-}
-
-func (x *ConnectorResult) GetFields() []*ConnectorResultField {
-	if x != nil {
-		return x.Fields
-	}
-	return nil
-}
-
-type ConnectorResultField struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Name   string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Type   string `protobuf:"bytes,2,opt,name=type,proto3" json:"type,omitempty"`
-	Size   int32  `protobuf:"varint,3,opt,name=size,proto3" json:"size,omitempty"`
-	Length int32  `protobuf:"varint,4,opt,name=length,proto3" json:"length,omitempty"`
-}
-
-func (x *ConnectorResultField) Reset() {
-	*x = ConnectorResultField{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[33]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorResultField) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorResultField) ProtoMessage() {}
-
-func (x *ConnectorResultField) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[33]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorResultField.ProtoReflect.Descriptor instead.
-func (*ConnectorResultField) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *ConnectorResultField) GetName() string {
-	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *ConnectorResultField) GetType() string {
-	if x != nil {
-		return x.Type
-	}
-	return ""
-}
-
-func (x *ConnectorResultField) GetSize() int32 {
-	if x != nil {
-		return x.Size
-	}
-	return 0
-}
-
-func (x *ConnectorResultField) GetLength() int32 {
-	if x != nil {
-		return x.Length
-	}
-	return 0
-}
-
-type ConnectorResultFetchResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Success   bool     `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Reason    string   `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
-	Elapse    string   `protobuf:"bytes,3,opt,name=elapse,proto3" json:"elapse,omitempty"`
-	HasNoRows bool     `protobuf:"varint,4,opt,name=hasNoRows,proto3" json:"hasNoRows,omitempty"`
-	Values    []*Datum `protobuf:"bytes,5,rep,name=values,proto3" json:"values,omitempty"`
-}
-
-func (x *ConnectorResultFetchResponse) Reset() {
-	*x = ConnectorResultFetchResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[34]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorResultFetchResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorResultFetchResponse) ProtoMessage() {}
-
-func (x *ConnectorResultFetchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[34]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorResultFetchResponse.ProtoReflect.Descriptor instead.
-func (*ConnectorResultFetchResponse) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{34}
-}
-
-func (x *ConnectorResultFetchResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *ConnectorResultFetchResponse) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-func (x *ConnectorResultFetchResponse) GetElapse() string {
-	if x != nil {
-		return x.Elapse
-	}
-	return ""
-}
-
-func (x *ConnectorResultFetchResponse) GetHasNoRows() bool {
-	if x != nil {
-		return x.HasNoRows
-	}
-	return false
-}
-
-func (x *ConnectorResultFetchResponse) GetValues() []*Datum {
-	if x != nil {
-		return x.Values
-	}
-	return nil
-}
-
-type Datum struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Value:
-	//
-	//	*Datum_VInt32
-	//	*Datum_VUint32
-	//	*Datum_VInt64
-	//	*Datum_VUint64
-	//	*Datum_VFloat
-	//	*Datum_VDouble
-	//	*Datum_VString
-	//	*Datum_VBool
-	//	*Datum_VBytes
-	//	*Datum_VIp
-	//	*Datum_VTime
-	//	*Datum_VNull
-	Value isDatum_Value `protobuf_oneof:"value"`
-}
-
-func (x *Datum) Reset() {
-	*x = Datum{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[35]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Datum) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Datum) ProtoMessage() {}
-
-func (x *Datum) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[35]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Datum.ProtoReflect.Descriptor instead.
-func (*Datum) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{35}
-}
-
-func (m *Datum) GetValue() isDatum_Value {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (x *Datum) GetVInt32() int32 {
-	if x, ok := x.GetValue().(*Datum_VInt32); ok {
-		return x.VInt32
-	}
-	return 0
-}
-
-func (x *Datum) GetVUint32() uint32 {
-	if x, ok := x.GetValue().(*Datum_VUint32); ok {
-		return x.VUint32
-	}
-	return 0
-}
-
-func (x *Datum) GetVInt64() int64 {
-	if x, ok := x.GetValue().(*Datum_VInt64); ok {
-		return x.VInt64
-	}
-	return 0
-}
-
-func (x *Datum) GetVUint64() uint64 {
-	if x, ok := x.GetValue().(*Datum_VUint64); ok {
-		return x.VUint64
-	}
-	return 0
-}
-
-func (x *Datum) GetVFloat() float32 {
-	if x, ok := x.GetValue().(*Datum_VFloat); ok {
-		return x.VFloat
-	}
-	return 0
-}
-
-func (x *Datum) GetVDouble() float64 {
-	if x, ok := x.GetValue().(*Datum_VDouble); ok {
-		return x.VDouble
-	}
-	return 0
-}
-
-func (x *Datum) GetVString() string {
-	if x, ok := x.GetValue().(*Datum_VString); ok {
-		return x.VString
-	}
-	return ""
-}
-
-func (x *Datum) GetVBool() bool {
-	if x, ok := x.GetValue().(*Datum_VBool); ok {
-		return x.VBool
-	}
-	return false
-}
-
-func (x *Datum) GetVBytes() []byte {
-	if x, ok := x.GetValue().(*Datum_VBytes); ok {
-		return x.VBytes
-	}
-	return nil
-}
-
-func (x *Datum) GetVIp() string {
-	if x, ok := x.GetValue().(*Datum_VIp); ok {
-		return x.VIp
-	}
-	return ""
-}
-
-func (x *Datum) GetVTime() int64 {
-	if x, ok := x.GetValue().(*Datum_VTime); ok {
-		return x.VTime
-	}
-	return 0
-}
-
-func (x *Datum) GetVNull() bool {
-	if x, ok := x.GetValue().(*Datum_VNull); ok {
-		return x.VNull
-	}
-	return false
-}
-
-type isDatum_Value interface {
-	isDatum_Value()
-}
-
-type Datum_VInt32 struct {
-	VInt32 int32 `protobuf:"varint,1,opt,name=v_int32,json=vInt32,proto3,oneof"`
-}
-
-type Datum_VUint32 struct {
-	VUint32 uint32 `protobuf:"varint,11,opt,name=v_uint32,json=vUint32,proto3,oneof"`
-}
-
-type Datum_VInt64 struct {
-	VInt64 int64 `protobuf:"varint,2,opt,name=v_int64,json=vInt64,proto3,oneof"`
-}
-
-type Datum_VUint64 struct {
-	VUint64 uint64 `protobuf:"varint,12,opt,name=v_uint64,json=vUint64,proto3,oneof"`
-}
-
-type Datum_VFloat struct {
-	VFloat float32 `protobuf:"fixed32,3,opt,name=v_float,json=vFloat,proto3,oneof"`
-}
-
-type Datum_VDouble struct {
-	VDouble float64 `protobuf:"fixed64,4,opt,name=v_double,json=vDouble,proto3,oneof"`
-}
-
-type Datum_VString struct {
-	VString string `protobuf:"bytes,5,opt,name=v_string,json=vString,proto3,oneof"`
-}
-
-type Datum_VBool struct {
-	VBool bool `protobuf:"varint,6,opt,name=v_bool,json=vBool,proto3,oneof"`
-}
-
-type Datum_VBytes struct {
-	VBytes []byte `protobuf:"bytes,7,opt,name=v_bytes,json=vBytes,proto3,oneof"`
-}
-
-type Datum_VIp struct {
-	VIp string `protobuf:"bytes,8,opt,name=v_ip,json=vIp,proto3,oneof"`
-}
-
-type Datum_VTime struct {
-	VTime int64 `protobuf:"varint,9,opt,name=v_time,json=vTime,proto3,oneof"`
-}
-
-type Datum_VNull struct {
-	VNull bool `protobuf:"varint,10,opt,name=v_null,json=vNull,proto3,oneof"`
-}
-
-func (*Datum_VInt32) isDatum_Value() {}
-
-func (*Datum_VUint32) isDatum_Value() {}
-
-func (*Datum_VInt64) isDatum_Value() {}
-
-func (*Datum_VUint64) isDatum_Value() {}
-
-func (*Datum_VFloat) isDatum_Value() {}
-
-func (*Datum_VDouble) isDatum_Value() {}
-
-func (*Datum_VString) isDatum_Value() {}
-
-func (*Datum_VBool) isDatum_Value() {}
-
-func (*Datum_VBytes) isDatum_Value() {}
-
-func (*Datum_VIp) isDatum_Value() {}
-
-func (*Datum_VTime) isDatum_Value() {}
-
-func (*Datum_VNull) isDatum_Value() {}
-
-type ConnectorResultCloseResponse struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Success bool   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
-	Reason  string `protobuf:"bytes,2,opt,name=reason,proto3" json:"reason,omitempty"`
-	Elapse  string `protobuf:"bytes,3,opt,name=elapse,proto3" json:"elapse,omitempty"`
-}
-
-func (x *ConnectorResultCloseResponse) Reset() {
-	*x = ConnectorResultCloseResponse{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_machrpc_proto_msgTypes[36]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ConnectorResultCloseResponse) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConnectorResultCloseResponse) ProtoMessage() {}
-
-func (x *ConnectorResultCloseResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_machrpc_proto_msgTypes[36]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConnectorResultCloseResponse.ProtoReflect.Descriptor instead.
-func (*ConnectorResultCloseResponse) Descriptor() ([]byte, []int) {
-	return file_machrpc_proto_rawDescGZIP(), []int{36}
-}
-
-func (x *ConnectorResultCloseResponse) GetSuccess() bool {
-	if x != nil {
-		return x.Success
-	}
-	return false
-}
-
-func (x *ConnectorResultCloseResponse) GetReason() string {
-	if x != nil {
-		return x.Reason
-	}
-	return ""
-}
-
-func (x *ConnectorResultCloseResponse) GetElapse() string {
-	if x != nil {
-		return x.Elapse
-	}
-	return ""
-}
-
 var File_machrpc_proto protoreflect.FileDescriptor
 
 var file_machrpc_proto_rawDesc = []byte{
@@ -3060,75 +2437,7 @@ var file_machrpc_proto_rawDesc = []byte{
 	0x6f, 0x72, 0x74, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x18, 0x0a,
 	0x07, 0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07,
-	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x22, 0x6c, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x6e, 0x65,
-	0x63, 0x74, 0x6f, 0x72, 0x45, 0x78, 0x65, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
-	0x61, 0x6d, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x26, 0x0a,
-	0x06, 0x70, 0x61, 0x72, 0x61, 0x6d, 0x73, 0x18, 0x03, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0e, 0x2e,
-	0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x44, 0x61, 0x74, 0x75, 0x6d, 0x52, 0x06, 0x70,
-	0x61, 0x72, 0x61, 0x6d, 0x73, 0x22, 0x93, 0x01, 0x0a, 0x15, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63,
-	0x74, 0x6f, 0x72, 0x45, 0x78, 0x65, 0x63, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08,
-	0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61,
-	0x73, 0x6f, 0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f,
-	0x6e, 0x12, 0x16, 0x0a, 0x06, 0x65, 0x6c, 0x61, 0x70, 0x73, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x65, 0x6c, 0x61, 0x70, 0x73, 0x65, 0x12, 0x30, 0x0a, 0x06, 0x72, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x18, 0x2e, 0x6d, 0x61, 0x63, 0x68,
-	0x72, 0x70, 0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73,
-	0x75, 0x6c, 0x74, 0x52, 0x06, 0x72, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x22, 0x60, 0x0a, 0x0f, 0x43,
-	0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x12, 0x16,
-	0x0a, 0x06, 0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06,
-	0x68, 0x61, 0x6e, 0x64, 0x6c, 0x65, 0x12, 0x35, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73,
-	0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63,
-	0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x46, 0x69, 0x65, 0x6c, 0x64, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x22, 0x6a, 0x0a,
-	0x14, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x46, 0x69, 0x65, 0x6c, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x79, 0x70,
-	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x12, 0x0a,
-	0x04, 0x73, 0x69, 0x7a, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x05, 0x52, 0x04, 0x73, 0x69, 0x7a,
-	0x65, 0x12, 0x16, 0x0a, 0x06, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x05, 0x52, 0x06, 0x6c, 0x65, 0x6e, 0x67, 0x74, 0x68, 0x22, 0xae, 0x01, 0x0a, 0x1c, 0x43, 0x6f,
-	0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x46, 0x65, 0x74,
-	0x63, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x75,
-	0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x73, 0x75, 0x63,
-	0x63, 0x65, 0x73, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x18, 0x02,
-	0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06,
-	0x65, 0x6c, 0x61, 0x70, 0x73, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x65, 0x6c,
-	0x61, 0x70, 0x73, 0x65, 0x12, 0x1c, 0x0a, 0x09, 0x68, 0x61, 0x73, 0x4e, 0x6f, 0x52, 0x6f, 0x77,
-	0x73, 0x18, 0x04, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x68, 0x61, 0x73, 0x4e, 0x6f, 0x52, 0x6f,
-	0x77, 0x73, 0x12, 0x26, 0x0a, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x05, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x44, 0x61, 0x74,
-	0x75, 0x6d, 0x52, 0x06, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0xd0, 0x02, 0x0a, 0x05, 0x44,
-	0x61, 0x74, 0x75, 0x6d, 0x12, 0x19, 0x0a, 0x07, 0x76, 0x5f, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x18,
-	0x01, 0x20, 0x01, 0x28, 0x05, 0x48, 0x00, 0x52, 0x06, 0x76, 0x49, 0x6e, 0x74, 0x33, 0x32, 0x12,
-	0x1b, 0x0a, 0x08, 0x76, 0x5f, 0x75, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x18, 0x0b, 0x20, 0x01, 0x28,
-	0x0d, 0x48, 0x00, 0x52, 0x07, 0x76, 0x55, 0x69, 0x6e, 0x74, 0x33, 0x32, 0x12, 0x19, 0x0a, 0x07,
-	0x76, 0x5f, 0x69, 0x6e, 0x74, 0x36, 0x34, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x48, 0x00, 0x52,
-	0x06, 0x76, 0x49, 0x6e, 0x74, 0x36, 0x34, 0x12, 0x1b, 0x0a, 0x08, 0x76, 0x5f, 0x75, 0x69, 0x6e,
-	0x74, 0x36, 0x34, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x48, 0x00, 0x52, 0x07, 0x76, 0x55, 0x69,
-	0x6e, 0x74, 0x36, 0x34, 0x12, 0x19, 0x0a, 0x07, 0x76, 0x5f, 0x66, 0x6c, 0x6f, 0x61, 0x74, 0x18,
-	0x03, 0x20, 0x01, 0x28, 0x02, 0x48, 0x00, 0x52, 0x06, 0x76, 0x46, 0x6c, 0x6f, 0x61, 0x74, 0x12,
-	0x1b, 0x0a, 0x08, 0x76, 0x5f, 0x64, 0x6f, 0x75, 0x62, 0x6c, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
-	0x01, 0x48, 0x00, 0x52, 0x07, 0x76, 0x44, 0x6f, 0x75, 0x62, 0x6c, 0x65, 0x12, 0x1b, 0x0a, 0x08,
-	0x76, 0x5f, 0x73, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00,
-	0x52, 0x07, 0x76, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x12, 0x17, 0x0a, 0x06, 0x76, 0x5f, 0x62,
-	0x6f, 0x6f, 0x6c, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x48, 0x00, 0x52, 0x05, 0x76, 0x42, 0x6f,
-	0x6f, 0x6c, 0x12, 0x19, 0x0a, 0x07, 0x76, 0x5f, 0x62, 0x79, 0x74, 0x65, 0x73, 0x18, 0x07, 0x20,
-	0x01, 0x28, 0x0c, 0x48, 0x00, 0x52, 0x06, 0x76, 0x42, 0x79, 0x74, 0x65, 0x73, 0x12, 0x13, 0x0a,
-	0x04, 0x76, 0x5f, 0x69, 0x70, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x48, 0x00, 0x52, 0x03, 0x76,
-	0x49, 0x70, 0x12, 0x17, 0x0a, 0x06, 0x76, 0x5f, 0x74, 0x69, 0x6d, 0x65, 0x18, 0x09, 0x20, 0x01,
-	0x28, 0x03, 0x48, 0x00, 0x52, 0x05, 0x76, 0x54, 0x69, 0x6d, 0x65, 0x12, 0x17, 0x0a, 0x06, 0x76,
-	0x5f, 0x6e, 0x75, 0x6c, 0x6c, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x08, 0x48, 0x00, 0x52, 0x05, 0x76,
-	0x4e, 0x75, 0x6c, 0x6c, 0x42, 0x07, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x68, 0x0a,
-	0x1c, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x43, 0x6c, 0x6f, 0x73, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a,
-	0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
-	0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x12, 0x16, 0x0a, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f,
-	0x6e, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x72, 0x65, 0x61, 0x73, 0x6f, 0x6e, 0x12,
-	0x16, 0x0a, 0x06, 0x65, 0x6c, 0x61, 0x70, 0x73, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x06, 0x65, 0x6c, 0x61, 0x70, 0x73, 0x65, 0x32, 0xc5, 0x08, 0x0a, 0x08, 0x4d, 0x61, 0x63, 0x68,
+	0x61, 0x64, 0x64, 0x72, 0x65, 0x73, 0x73, 0x32, 0xbd, 0x06, 0x0a, 0x08, 0x4d, 0x61, 0x63, 0x68,
 	0x62, 0x61, 0x73, 0x65, 0x12, 0x35, 0x0a, 0x04, 0x50, 0x69, 0x6e, 0x67, 0x12, 0x14, 0x2e, 0x6d,
 	0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x69, 0x6e, 0x67, 0x52, 0x65, 0x71, 0x75, 0x65,
 	0x73, 0x74, 0x1a, 0x15, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x50, 0x69, 0x6e,
@@ -3180,26 +2489,10 @@ var file_machrpc_proto_rawDesc = []byte{
 	0x12, 0x1c, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69,
 	0x63, 0x65, 0x50, 0x6f, 0x72, 0x74, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x15,
 	0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
-	0x50, 0x6f, 0x72, 0x74, 0x73, 0x22, 0x00, 0x12, 0x50, 0x0a, 0x0d, 0x43, 0x6f, 0x6e, 0x6e, 0x65,
-	0x63, 0x74, 0x6f, 0x72, 0x45, 0x78, 0x65, 0x63, 0x12, 0x1d, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72,
-	0x70, 0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x45, 0x78, 0x65, 0x63,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70,
-	0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x45, 0x78, 0x65, 0x63, 0x52,
-	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x59, 0x0a, 0x14, 0x43, 0x6f, 0x6e,
-	0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x46, 0x65, 0x74, 0x63,
-	0x68, 0x12, 0x18, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e,
-	0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x1a, 0x25, 0x2e, 0x6d, 0x61,
-	0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52,
-	0x65, 0x73, 0x75, 0x6c, 0x74, 0x46, 0x65, 0x74, 0x63, 0x68, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x22, 0x00, 0x12, 0x59, 0x0a, 0x14, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f,
-	0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x43, 0x6c, 0x6f, 0x73, 0x65, 0x12, 0x18, 0x2e, 0x6d,
-	0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72,
-	0x52, 0x65, 0x73, 0x75, 0x6c, 0x74, 0x1a, 0x25, 0x2e, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63,
-	0x2e, 0x43, 0x6f, 0x6e, 0x6e, 0x65, 0x63, 0x74, 0x6f, 0x72, 0x52, 0x65, 0x73, 0x75, 0x6c, 0x74,
-	0x43, 0x6c, 0x6f, 0x73, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42,
-	0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x61,
-	0x63, 0x68, 0x62, 0x61, 0x73, 0x65, 0x2f, 0x6e, 0x65, 0x6f, 0x2d, 0x67, 0x72, 0x70, 0x63, 0x2f,
-	0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x50, 0x6f, 0x72, 0x74, 0x73, 0x22, 0x00, 0x42, 0x26, 0x5a, 0x24, 0x67, 0x69, 0x74, 0x68, 0x75,
+	0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x6d, 0x61, 0x63, 0x68, 0x62, 0x61, 0x73, 0x65, 0x2f, 0x6e,
+	0x65, 0x6f, 0x2d, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x6d, 0x61, 0x63, 0x68, 0x72, 0x70, 0x63, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -3214,102 +2507,85 @@ func file_machrpc_proto_rawDescGZIP() []byte {
 	return file_machrpc_proto_rawDescData
 }
 
-var file_machrpc_proto_msgTypes = make([]protoimpl.MessageInfo, 37)
+var file_machrpc_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
 var file_machrpc_proto_goTypes = []interface{}{
-	(*PingRequest)(nil),                  // 0: machrpc.PingRequest
-	(*PingResponse)(nil),                 // 1: machrpc.PingResponse
-	(*AppenderRequest)(nil),              // 2: machrpc.AppenderRequest
-	(*AppenderResponse)(nil),             // 3: machrpc.AppenderResponse
-	(*AppendData)(nil),                   // 4: machrpc.AppendData
-	(*AppendRecord)(nil),                 // 5: machrpc.AppendRecord
-	(*AppendDatum)(nil),                  // 6: machrpc.AppendDatum
-	(*AppendDone)(nil),                   // 7: machrpc.AppendDone
-	(*ExplainRequest)(nil),               // 8: machrpc.ExplainRequest
-	(*ExplainResponse)(nil),              // 9: machrpc.ExplainResponse
-	(*ExecRequest)(nil),                  // 10: machrpc.ExecRequest
-	(*ExecResponse)(nil),                 // 11: machrpc.ExecResponse
-	(*QueryRowRequest)(nil),              // 12: machrpc.QueryRowRequest
-	(*QueryRowResponse)(nil),             // 13: machrpc.QueryRowResponse
-	(*QueryRequest)(nil),                 // 14: machrpc.QueryRequest
-	(*QueryResponse)(nil),                // 15: machrpc.QueryResponse
-	(*ColumnsResponse)(nil),              // 16: machrpc.ColumnsResponse
-	(*Column)(nil),                       // 17: machrpc.Column
-	(*RowsHandle)(nil),                   // 18: machrpc.RowsHandle
-	(*RowsFetchResponse)(nil),            // 19: machrpc.RowsFetchResponse
-	(*RowsCloseResponse)(nil),            // 20: machrpc.RowsCloseResponse
-	(*UserAuthRequest)(nil),              // 21: machrpc.UserAuthRequest
-	(*UserAuthResponse)(nil),             // 22: machrpc.UserAuthResponse
-	(*ServerInfoRequest)(nil),            // 23: machrpc.ServerInfoRequest
-	(*ServerInfo)(nil),                   // 24: machrpc.ServerInfo
-	(*Version)(nil),                      // 25: machrpc.Version
-	(*Runtime)(nil),                      // 26: machrpc.Runtime
-	(*ServicePortsRequest)(nil),          // 27: machrpc.ServicePortsRequest
-	(*ServicePorts)(nil),                 // 28: machrpc.ServicePorts
-	(*Port)(nil),                         // 29: machrpc.Port
-	(*ConnectorExecRequest)(nil),         // 30: machrpc.ConnectorExecRequest
-	(*ConnectorExecResponse)(nil),        // 31: machrpc.ConnectorExecResponse
-	(*ConnectorResult)(nil),              // 32: machrpc.ConnectorResult
-	(*ConnectorResultField)(nil),         // 33: machrpc.ConnectorResultField
-	(*ConnectorResultFetchResponse)(nil), // 34: machrpc.ConnectorResultFetchResponse
-	(*Datum)(nil),                        // 35: machrpc.Datum
-	(*ConnectorResultCloseResponse)(nil), // 36: machrpc.ConnectorResultCloseResponse
-	(*anypb.Any)(nil),                    // 37: google.protobuf.Any
+	(*PingRequest)(nil),         // 0: machrpc.PingRequest
+	(*PingResponse)(nil),        // 1: machrpc.PingResponse
+	(*AppenderRequest)(nil),     // 2: machrpc.AppenderRequest
+	(*AppenderResponse)(nil),    // 3: machrpc.AppenderResponse
+	(*AppendData)(nil),          // 4: machrpc.AppendData
+	(*AppendRecord)(nil),        // 5: machrpc.AppendRecord
+	(*AppendDatum)(nil),         // 6: machrpc.AppendDatum
+	(*AppendDone)(nil),          // 7: machrpc.AppendDone
+	(*ExplainRequest)(nil),      // 8: machrpc.ExplainRequest
+	(*ExplainResponse)(nil),     // 9: machrpc.ExplainResponse
+	(*ExecRequest)(nil),         // 10: machrpc.ExecRequest
+	(*ExecResponse)(nil),        // 11: machrpc.ExecResponse
+	(*QueryRowRequest)(nil),     // 12: machrpc.QueryRowRequest
+	(*QueryRowResponse)(nil),    // 13: machrpc.QueryRowResponse
+	(*QueryRequest)(nil),        // 14: machrpc.QueryRequest
+	(*QueryResponse)(nil),       // 15: machrpc.QueryResponse
+	(*ColumnsResponse)(nil),     // 16: machrpc.ColumnsResponse
+	(*Column)(nil),              // 17: machrpc.Column
+	(*RowsHandle)(nil),          // 18: machrpc.RowsHandle
+	(*RowsFetchResponse)(nil),   // 19: machrpc.RowsFetchResponse
+	(*RowsCloseResponse)(nil),   // 20: machrpc.RowsCloseResponse
+	(*UserAuthRequest)(nil),     // 21: machrpc.UserAuthRequest
+	(*UserAuthResponse)(nil),    // 22: machrpc.UserAuthResponse
+	(*ServerInfoRequest)(nil),   // 23: machrpc.ServerInfoRequest
+	(*ServerInfo)(nil),          // 24: machrpc.ServerInfo
+	(*Version)(nil),             // 25: machrpc.Version
+	(*Runtime)(nil),             // 26: machrpc.Runtime
+	(*ServicePortsRequest)(nil), // 27: machrpc.ServicePortsRequest
+	(*ServicePorts)(nil),        // 28: machrpc.ServicePorts
+	(*Port)(nil),                // 29: machrpc.Port
+	(*anypb.Any)(nil),           // 30: google.protobuf.Any
 }
 var file_machrpc_proto_depIdxs = []int32{
-	37, // 0: machrpc.AppendData.params:type_name -> google.protobuf.Any
+	30, // 0: machrpc.AppendData.params:type_name -> google.protobuf.Any
 	5,  // 1: machrpc.AppendData.records:type_name -> machrpc.AppendRecord
 	6,  // 2: machrpc.AppendRecord.tuple:type_name -> machrpc.AppendDatum
-	37, // 3: machrpc.ExecRequest.params:type_name -> google.protobuf.Any
-	37, // 4: machrpc.QueryRowRequest.params:type_name -> google.protobuf.Any
-	37, // 5: machrpc.QueryRowResponse.values:type_name -> google.protobuf.Any
-	37, // 6: machrpc.QueryRequest.params:type_name -> google.protobuf.Any
+	30, // 3: machrpc.ExecRequest.params:type_name -> google.protobuf.Any
+	30, // 4: machrpc.QueryRowRequest.params:type_name -> google.protobuf.Any
+	30, // 5: machrpc.QueryRowResponse.values:type_name -> google.protobuf.Any
+	30, // 6: machrpc.QueryRequest.params:type_name -> google.protobuf.Any
 	18, // 7: machrpc.QueryResponse.rowsHandle:type_name -> machrpc.RowsHandle
 	17, // 8: machrpc.ColumnsResponse.columns:type_name -> machrpc.Column
-	37, // 9: machrpc.RowsFetchResponse.values:type_name -> google.protobuf.Any
+	30, // 9: machrpc.RowsFetchResponse.values:type_name -> google.protobuf.Any
 	25, // 10: machrpc.ServerInfo.version:type_name -> machrpc.Version
 	26, // 11: machrpc.ServerInfo.runtime:type_name -> machrpc.Runtime
 	29, // 12: machrpc.ServicePorts.ports:type_name -> machrpc.Port
-	35, // 13: machrpc.ConnectorExecRequest.params:type_name -> machrpc.Datum
-	32, // 14: machrpc.ConnectorExecResponse.result:type_name -> machrpc.ConnectorResult
-	33, // 15: machrpc.ConnectorResult.fields:type_name -> machrpc.ConnectorResultField
-	35, // 16: machrpc.ConnectorResultFetchResponse.values:type_name -> machrpc.Datum
-	0,  // 17: machrpc.Machbase.Ping:input_type -> machrpc.PingRequest
-	10, // 18: machrpc.Machbase.Exec:input_type -> machrpc.ExecRequest
-	12, // 19: machrpc.Machbase.QueryRow:input_type -> machrpc.QueryRowRequest
-	14, // 20: machrpc.Machbase.Query:input_type -> machrpc.QueryRequest
-	18, // 21: machrpc.Machbase.Columns:input_type -> machrpc.RowsHandle
-	18, // 22: machrpc.Machbase.RowsFetch:input_type -> machrpc.RowsHandle
-	18, // 23: machrpc.Machbase.RowsClose:input_type -> machrpc.RowsHandle
-	2,  // 24: machrpc.Machbase.Appender:input_type -> machrpc.AppenderRequest
-	4,  // 25: machrpc.Machbase.Append:input_type -> machrpc.AppendData
-	8,  // 26: machrpc.Machbase.Explain:input_type -> machrpc.ExplainRequest
-	21, // 27: machrpc.Machbase.UserAuth:input_type -> machrpc.UserAuthRequest
-	23, // 28: machrpc.Machbase.GetServerInfo:input_type -> machrpc.ServerInfoRequest
-	27, // 29: machrpc.Machbase.GetServicePorts:input_type -> machrpc.ServicePortsRequest
-	30, // 30: machrpc.Machbase.ConnectorExec:input_type -> machrpc.ConnectorExecRequest
-	32, // 31: machrpc.Machbase.ConnectorResultFetch:input_type -> machrpc.ConnectorResult
-	32, // 32: machrpc.Machbase.ConnectorResultClose:input_type -> machrpc.ConnectorResult
-	1,  // 33: machrpc.Machbase.Ping:output_type -> machrpc.PingResponse
-	11, // 34: machrpc.Machbase.Exec:output_type -> machrpc.ExecResponse
-	13, // 35: machrpc.Machbase.QueryRow:output_type -> machrpc.QueryRowResponse
-	15, // 36: machrpc.Machbase.Query:output_type -> machrpc.QueryResponse
-	16, // 37: machrpc.Machbase.Columns:output_type -> machrpc.ColumnsResponse
-	19, // 38: machrpc.Machbase.RowsFetch:output_type -> machrpc.RowsFetchResponse
-	20, // 39: machrpc.Machbase.RowsClose:output_type -> machrpc.RowsCloseResponse
-	3,  // 40: machrpc.Machbase.Appender:output_type -> machrpc.AppenderResponse
-	7,  // 41: machrpc.Machbase.Append:output_type -> machrpc.AppendDone
-	9,  // 42: machrpc.Machbase.Explain:output_type -> machrpc.ExplainResponse
-	22, // 43: machrpc.Machbase.UserAuth:output_type -> machrpc.UserAuthResponse
-	24, // 44: machrpc.Machbase.GetServerInfo:output_type -> machrpc.ServerInfo
-	28, // 45: machrpc.Machbase.GetServicePorts:output_type -> machrpc.ServicePorts
-	31, // 46: machrpc.Machbase.ConnectorExec:output_type -> machrpc.ConnectorExecResponse
-	34, // 47: machrpc.Machbase.ConnectorResultFetch:output_type -> machrpc.ConnectorResultFetchResponse
-	36, // 48: machrpc.Machbase.ConnectorResultClose:output_type -> machrpc.ConnectorResultCloseResponse
-	33, // [33:49] is the sub-list for method output_type
-	17, // [17:33] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	0,  // 13: machrpc.Machbase.Ping:input_type -> machrpc.PingRequest
+	10, // 14: machrpc.Machbase.Exec:input_type -> machrpc.ExecRequest
+	12, // 15: machrpc.Machbase.QueryRow:input_type -> machrpc.QueryRowRequest
+	14, // 16: machrpc.Machbase.Query:input_type -> machrpc.QueryRequest
+	18, // 17: machrpc.Machbase.Columns:input_type -> machrpc.RowsHandle
+	18, // 18: machrpc.Machbase.RowsFetch:input_type -> machrpc.RowsHandle
+	18, // 19: machrpc.Machbase.RowsClose:input_type -> machrpc.RowsHandle
+	2,  // 20: machrpc.Machbase.Appender:input_type -> machrpc.AppenderRequest
+	4,  // 21: machrpc.Machbase.Append:input_type -> machrpc.AppendData
+	8,  // 22: machrpc.Machbase.Explain:input_type -> machrpc.ExplainRequest
+	21, // 23: machrpc.Machbase.UserAuth:input_type -> machrpc.UserAuthRequest
+	23, // 24: machrpc.Machbase.GetServerInfo:input_type -> machrpc.ServerInfoRequest
+	27, // 25: machrpc.Machbase.GetServicePorts:input_type -> machrpc.ServicePortsRequest
+	1,  // 26: machrpc.Machbase.Ping:output_type -> machrpc.PingResponse
+	11, // 27: machrpc.Machbase.Exec:output_type -> machrpc.ExecResponse
+	13, // 28: machrpc.Machbase.QueryRow:output_type -> machrpc.QueryRowResponse
+	15, // 29: machrpc.Machbase.Query:output_type -> machrpc.QueryResponse
+	16, // 30: machrpc.Machbase.Columns:output_type -> machrpc.ColumnsResponse
+	19, // 31: machrpc.Machbase.RowsFetch:output_type -> machrpc.RowsFetchResponse
+	20, // 32: machrpc.Machbase.RowsClose:output_type -> machrpc.RowsCloseResponse
+	3,  // 33: machrpc.Machbase.Appender:output_type -> machrpc.AppenderResponse
+	7,  // 34: machrpc.Machbase.Append:output_type -> machrpc.AppendDone
+	9,  // 35: machrpc.Machbase.Explain:output_type -> machrpc.ExplainResponse
+	22, // 36: machrpc.Machbase.UserAuth:output_type -> machrpc.UserAuthResponse
+	24, // 37: machrpc.Machbase.GetServerInfo:output_type -> machrpc.ServerInfo
+	28, // 38: machrpc.Machbase.GetServicePorts:output_type -> machrpc.ServicePorts
+	26, // [26:39] is the sub-list for method output_type
+	13, // [13:26] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_machrpc_proto_init() }
@@ -3678,90 +2954,6 @@ func file_machrpc_proto_init() {
 				return nil
 			}
 		}
-		file_machrpc_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorExecRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorExecResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorResult); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorResultField); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorResultFetchResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Datum); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_machrpc_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ConnectorResultCloseResponse); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
 	}
 	file_machrpc_proto_msgTypes[6].OneofWrappers = []interface{}{
 		(*AppendDatum_VInt32)(nil),
@@ -3777,27 +2969,13 @@ func file_machrpc_proto_init() {
 		(*AppendDatum_VTime)(nil),
 		(*AppendDatum_VNull)(nil),
 	}
-	file_machrpc_proto_msgTypes[35].OneofWrappers = []interface{}{
-		(*Datum_VInt32)(nil),
-		(*Datum_VUint32)(nil),
-		(*Datum_VInt64)(nil),
-		(*Datum_VUint64)(nil),
-		(*Datum_VFloat)(nil),
-		(*Datum_VDouble)(nil),
-		(*Datum_VString)(nil),
-		(*Datum_VBool)(nil),
-		(*Datum_VBytes)(nil),
-		(*Datum_VIp)(nil),
-		(*Datum_VTime)(nil),
-		(*Datum_VNull)(nil),
-	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_machrpc_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   37,
+			NumMessages:   30,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

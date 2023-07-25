@@ -20,11 +20,6 @@ service Machbase {
     rpc UserAuth(UserAuthRequest) returns(UserAuthResponse) {}
     rpc GetServerInfo(ServerInfoRequest) returns (ServerInfo) {}
     rpc GetServicePorts(ServicePortsRequest) returns (ServicePorts) {}
-
-    // connector services
-    rpc ConnectorExec(ConnectorExecRequest) returns (ConnectorExecResponse) {}
-    rpc ConnectorResultFetch(ConnectorResult) returns(ConnectorResultFetchResponse) {}
-    rpc ConnectorResultClose(ConnectorResult) returns (ConnectorResultCloseResponse) {}
 }
 
 message PingRequest {
@@ -233,60 +228,3 @@ message Port {
     string service = 1;
     string address = 2;
 }
-
-message ConnectorExecRequest {
-    string name = 1;
-    string command = 2;
-    repeated Datum params = 3;
-}
-
-message ConnectorExecResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-    ConnectorResult result =4;
-}
-
-message ConnectorResult {
-    string handle = 1;
-    repeated ConnectorResultField fields = 4;
-}
-
-message ConnectorResultField {
-    string name = 1;
-    string type = 2;
-    int32 size = 3;
-    int32 length = 4;
-}
-
-message ConnectorResultFetchResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-    bool hasNoRows = 4;
-    repeated Datum values = 5;
-}
-
-message Datum {
-    oneof value {
-        int32   v_int32   = 1;
-        uint32  v_uint32  = 11;
-        int64   v_int64   = 2;
-        uint64  v_uint64  = 12;
-        float   v_float   = 3;
-        double  v_double  = 4;
-        string  v_string  = 5;
-        bool    v_bool    = 6;
-        bytes   v_bytes   = 7;
-        string  v_ip      = 8;
-        int64   v_time    = 9;
-        bool    v_null    = 10;
-    }
-}
-
-message ConnectorResultCloseResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-}
-

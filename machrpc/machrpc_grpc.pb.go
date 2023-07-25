@@ -19,22 +19,19 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Machbase_Ping_FullMethodName                 = "/machrpc.Machbase/Ping"
-	Machbase_Exec_FullMethodName                 = "/machrpc.Machbase/Exec"
-	Machbase_QueryRow_FullMethodName             = "/machrpc.Machbase/QueryRow"
-	Machbase_Query_FullMethodName                = "/machrpc.Machbase/Query"
-	Machbase_Columns_FullMethodName              = "/machrpc.Machbase/Columns"
-	Machbase_RowsFetch_FullMethodName            = "/machrpc.Machbase/RowsFetch"
-	Machbase_RowsClose_FullMethodName            = "/machrpc.Machbase/RowsClose"
-	Machbase_Appender_FullMethodName             = "/machrpc.Machbase/Appender"
-	Machbase_Append_FullMethodName               = "/machrpc.Machbase/Append"
-	Machbase_Explain_FullMethodName              = "/machrpc.Machbase/Explain"
-	Machbase_UserAuth_FullMethodName             = "/machrpc.Machbase/UserAuth"
-	Machbase_GetServerInfo_FullMethodName        = "/machrpc.Machbase/GetServerInfo"
-	Machbase_GetServicePorts_FullMethodName      = "/machrpc.Machbase/GetServicePorts"
-	Machbase_ConnectorExec_FullMethodName        = "/machrpc.Machbase/ConnectorExec"
-	Machbase_ConnectorResultFetch_FullMethodName = "/machrpc.Machbase/ConnectorResultFetch"
-	Machbase_ConnectorResultClose_FullMethodName = "/machrpc.Machbase/ConnectorResultClose"
+	Machbase_Ping_FullMethodName            = "/machrpc.Machbase/Ping"
+	Machbase_Exec_FullMethodName            = "/machrpc.Machbase/Exec"
+	Machbase_QueryRow_FullMethodName        = "/machrpc.Machbase/QueryRow"
+	Machbase_Query_FullMethodName           = "/machrpc.Machbase/Query"
+	Machbase_Columns_FullMethodName         = "/machrpc.Machbase/Columns"
+	Machbase_RowsFetch_FullMethodName       = "/machrpc.Machbase/RowsFetch"
+	Machbase_RowsClose_FullMethodName       = "/machrpc.Machbase/RowsClose"
+	Machbase_Appender_FullMethodName        = "/machrpc.Machbase/Appender"
+	Machbase_Append_FullMethodName          = "/machrpc.Machbase/Append"
+	Machbase_Explain_FullMethodName         = "/machrpc.Machbase/Explain"
+	Machbase_UserAuth_FullMethodName        = "/machrpc.Machbase/UserAuth"
+	Machbase_GetServerInfo_FullMethodName   = "/machrpc.Machbase/GetServerInfo"
+	Machbase_GetServicePorts_FullMethodName = "/machrpc.Machbase/GetServicePorts"
 )
 
 // MachbaseClient is the client API for Machbase service.
@@ -54,10 +51,6 @@ type MachbaseClient interface {
 	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
 	GetServerInfo(ctx context.Context, in *ServerInfoRequest, opts ...grpc.CallOption) (*ServerInfo, error)
 	GetServicePorts(ctx context.Context, in *ServicePortsRequest, opts ...grpc.CallOption) (*ServicePorts, error)
-	// connector services
-	ConnectorExec(ctx context.Context, in *ConnectorExecRequest, opts ...grpc.CallOption) (*ConnectorExecResponse, error)
-	ConnectorResultFetch(ctx context.Context, in *ConnectorResult, opts ...grpc.CallOption) (*ConnectorResultFetchResponse, error)
-	ConnectorResultClose(ctx context.Context, in *ConnectorResult, opts ...grpc.CallOption) (*ConnectorResultCloseResponse, error)
 }
 
 type machbaseClient struct {
@@ -210,33 +203,6 @@ func (c *machbaseClient) GetServicePorts(ctx context.Context, in *ServicePortsRe
 	return out, nil
 }
 
-func (c *machbaseClient) ConnectorExec(ctx context.Context, in *ConnectorExecRequest, opts ...grpc.CallOption) (*ConnectorExecResponse, error) {
-	out := new(ConnectorExecResponse)
-	err := c.cc.Invoke(ctx, Machbase_ConnectorExec_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *machbaseClient) ConnectorResultFetch(ctx context.Context, in *ConnectorResult, opts ...grpc.CallOption) (*ConnectorResultFetchResponse, error) {
-	out := new(ConnectorResultFetchResponse)
-	err := c.cc.Invoke(ctx, Machbase_ConnectorResultFetch_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *machbaseClient) ConnectorResultClose(ctx context.Context, in *ConnectorResult, opts ...grpc.CallOption) (*ConnectorResultCloseResponse, error) {
-	out := new(ConnectorResultCloseResponse)
-	err := c.cc.Invoke(ctx, Machbase_ConnectorResultClose_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // MachbaseServer is the server API for Machbase service.
 // All implementations must embed UnimplementedMachbaseServer
 // for forward compatibility
@@ -254,10 +220,6 @@ type MachbaseServer interface {
 	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
 	GetServerInfo(context.Context, *ServerInfoRequest) (*ServerInfo, error)
 	GetServicePorts(context.Context, *ServicePortsRequest) (*ServicePorts, error)
-	// connector services
-	ConnectorExec(context.Context, *ConnectorExecRequest) (*ConnectorExecResponse, error)
-	ConnectorResultFetch(context.Context, *ConnectorResult) (*ConnectorResultFetchResponse, error)
-	ConnectorResultClose(context.Context, *ConnectorResult) (*ConnectorResultCloseResponse, error)
 	mustEmbedUnimplementedMachbaseServer()
 }
 
@@ -303,15 +265,6 @@ func (UnimplementedMachbaseServer) GetServerInfo(context.Context, *ServerInfoReq
 }
 func (UnimplementedMachbaseServer) GetServicePorts(context.Context, *ServicePortsRequest) (*ServicePorts, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetServicePorts not implemented")
-}
-func (UnimplementedMachbaseServer) ConnectorExec(context.Context, *ConnectorExecRequest) (*ConnectorExecResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConnectorExec not implemented")
-}
-func (UnimplementedMachbaseServer) ConnectorResultFetch(context.Context, *ConnectorResult) (*ConnectorResultFetchResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConnectorResultFetch not implemented")
-}
-func (UnimplementedMachbaseServer) ConnectorResultClose(context.Context, *ConnectorResult) (*ConnectorResultCloseResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ConnectorResultClose not implemented")
 }
 func (UnimplementedMachbaseServer) mustEmbedUnimplementedMachbaseServer() {}
 
@@ -568,60 +521,6 @@ func _Machbase_GetServicePorts_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Machbase_ConnectorExec_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConnectorExecRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MachbaseServer).ConnectorExec(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Machbase_ConnectorExec_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MachbaseServer).ConnectorExec(ctx, req.(*ConnectorExecRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Machbase_ConnectorResultFetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConnectorResult)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MachbaseServer).ConnectorResultFetch(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Machbase_ConnectorResultFetch_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MachbaseServer).ConnectorResultFetch(ctx, req.(*ConnectorResult))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Machbase_ConnectorResultClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConnectorResult)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MachbaseServer).ConnectorResultClose(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Machbase_ConnectorResultClose_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MachbaseServer).ConnectorResultClose(ctx, req.(*ConnectorResult))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Machbase_ServiceDesc is the grpc.ServiceDesc for Machbase service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -676,18 +575,6 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetServicePorts",
 			Handler:    _Machbase_GetServicePorts_Handler,
-		},
-		{
-			MethodName: "ConnectorExec",
-			Handler:    _Machbase_ConnectorExec_Handler,
-		},
-		{
-			MethodName: "ConnectorResultFetch",
-			Handler:    _Machbase_ConnectorResultFetch_Handler,
-		},
-		{
-			MethodName: "ConnectorResultClose",
-			Handler:    _Machbase_ConnectorResultClose_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

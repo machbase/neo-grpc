@@ -16,10 +16,6 @@ service Management {
     rpc ListShell(ListShellRequest) returns (ListShellResponse) {}
     rpc AddShell(AddShellRequest) returns (AddShellResponse) {}
     rpc DelShell(DelShellRequest) returns (DelShellResponse) {}
-    rpc ListConnector(ListConnectorRequest) returns (ListConnectorResponse) {}
-    rpc AddConnector(AddConnectorRequest) returns (AddConnectorResponse) {}
-    rpc DelConnector(DelConnectorRequest) returns (DelConnectorResponse) {}
-    rpc TestConnector(TestConnectorRequest) returns (TestConnectorResponse) {}
 }
 
 message ListShellRequest{
@@ -54,54 +50,6 @@ message DelShellRequest{
 }
 
 message DelShellResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-}
-
-message ListConnectorRequest{
-}
-
-message ListConnectorResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-    repeated Connector connectors = 4;
-}
-
-message Connector {
-    string name = 1;
-    string type = 2;
-    string path = 3;
-}
-
-message AddConnectorRequest{
-    string name = 1;
-    string type = 2;
-    string path = 3;
-}
-
-message AddConnectorResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-}
-
-message DelConnectorRequest{
-    string name = 1;
-}
-
-message DelConnectorResponse {
-    bool success = 1;
-    string reason = 2;
-    string elapse = 3;
-}
-
-message TestConnectorRequest{
-    string name = 1;
-}
-
-message TestConnectorResponse{
     bool success = 1;
     string reason = 2;
     string elapse = 3;

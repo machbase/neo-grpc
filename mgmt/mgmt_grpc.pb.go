@@ -19,21 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Management_ListKey_FullMethodName       = "/mgmt.Management/ListKey"
-	Management_GenKey_FullMethodName        = "/mgmt.Management/GenKey"
-	Management_DelKey_FullMethodName        = "/mgmt.Management/DelKey"
-	Management_ServerKey_FullMethodName     = "/mgmt.Management/ServerKey"
-	Management_ListSshKey_FullMethodName    = "/mgmt.Management/ListSshKey"
-	Management_AddSshKey_FullMethodName     = "/mgmt.Management/AddSshKey"
-	Management_DelSshKey_FullMethodName     = "/mgmt.Management/DelSshKey"
-	Management_Shutdown_FullMethodName      = "/mgmt.Management/Shutdown"
-	Management_ListShell_FullMethodName     = "/mgmt.Management/ListShell"
-	Management_AddShell_FullMethodName      = "/mgmt.Management/AddShell"
-	Management_DelShell_FullMethodName      = "/mgmt.Management/DelShell"
-	Management_ListConnector_FullMethodName = "/mgmt.Management/ListConnector"
-	Management_AddConnector_FullMethodName  = "/mgmt.Management/AddConnector"
-	Management_DelConnector_FullMethodName  = "/mgmt.Management/DelConnector"
-	Management_TestConnector_FullMethodName = "/mgmt.Management/TestConnector"
+	Management_ListKey_FullMethodName    = "/mgmt.Management/ListKey"
+	Management_GenKey_FullMethodName     = "/mgmt.Management/GenKey"
+	Management_DelKey_FullMethodName     = "/mgmt.Management/DelKey"
+	Management_ServerKey_FullMethodName  = "/mgmt.Management/ServerKey"
+	Management_ListSshKey_FullMethodName = "/mgmt.Management/ListSshKey"
+	Management_AddSshKey_FullMethodName  = "/mgmt.Management/AddSshKey"
+	Management_DelSshKey_FullMethodName  = "/mgmt.Management/DelSshKey"
+	Management_Shutdown_FullMethodName   = "/mgmt.Management/Shutdown"
+	Management_ListShell_FullMethodName  = "/mgmt.Management/ListShell"
+	Management_AddShell_FullMethodName   = "/mgmt.Management/AddShell"
+	Management_DelShell_FullMethodName   = "/mgmt.Management/DelShell"
 )
 
 // ManagementClient is the client API for Management service.
@@ -51,10 +47,6 @@ type ManagementClient interface {
 	ListShell(ctx context.Context, in *ListShellRequest, opts ...grpc.CallOption) (*ListShellResponse, error)
 	AddShell(ctx context.Context, in *AddShellRequest, opts ...grpc.CallOption) (*AddShellResponse, error)
 	DelShell(ctx context.Context, in *DelShellRequest, opts ...grpc.CallOption) (*DelShellResponse, error)
-	ListConnector(ctx context.Context, in *ListConnectorRequest, opts ...grpc.CallOption) (*ListConnectorResponse, error)
-	AddConnector(ctx context.Context, in *AddConnectorRequest, opts ...grpc.CallOption) (*AddConnectorResponse, error)
-	DelConnector(ctx context.Context, in *DelConnectorRequest, opts ...grpc.CallOption) (*DelConnectorResponse, error)
-	TestConnector(ctx context.Context, in *TestConnectorRequest, opts ...grpc.CallOption) (*TestConnectorResponse, error)
 }
 
 type managementClient struct {
@@ -164,42 +156,6 @@ func (c *managementClient) DelShell(ctx context.Context, in *DelShellRequest, op
 	return out, nil
 }
 
-func (c *managementClient) ListConnector(ctx context.Context, in *ListConnectorRequest, opts ...grpc.CallOption) (*ListConnectorResponse, error) {
-	out := new(ListConnectorResponse)
-	err := c.cc.Invoke(ctx, Management_ListConnector_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *managementClient) AddConnector(ctx context.Context, in *AddConnectorRequest, opts ...grpc.CallOption) (*AddConnectorResponse, error) {
-	out := new(AddConnectorResponse)
-	err := c.cc.Invoke(ctx, Management_AddConnector_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *managementClient) DelConnector(ctx context.Context, in *DelConnectorRequest, opts ...grpc.CallOption) (*DelConnectorResponse, error) {
-	out := new(DelConnectorResponse)
-	err := c.cc.Invoke(ctx, Management_DelConnector_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *managementClient) TestConnector(ctx context.Context, in *TestConnectorRequest, opts ...grpc.CallOption) (*TestConnectorResponse, error) {
-	out := new(TestConnectorResponse)
-	err := c.cc.Invoke(ctx, Management_TestConnector_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // ManagementServer is the server API for Management service.
 // All implementations must embed UnimplementedManagementServer
 // for forward compatibility
@@ -215,10 +171,6 @@ type ManagementServer interface {
 	ListShell(context.Context, *ListShellRequest) (*ListShellResponse, error)
 	AddShell(context.Context, *AddShellRequest) (*AddShellResponse, error)
 	DelShell(context.Context, *DelShellRequest) (*DelShellResponse, error)
-	ListConnector(context.Context, *ListConnectorRequest) (*ListConnectorResponse, error)
-	AddConnector(context.Context, *AddConnectorRequest) (*AddConnectorResponse, error)
-	DelConnector(context.Context, *DelConnectorRequest) (*DelConnectorResponse, error)
-	TestConnector(context.Context, *TestConnectorRequest) (*TestConnectorResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
 
@@ -258,18 +210,6 @@ func (UnimplementedManagementServer) AddShell(context.Context, *AddShellRequest)
 }
 func (UnimplementedManagementServer) DelShell(context.Context, *DelShellRequest) (*DelShellResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelShell not implemented")
-}
-func (UnimplementedManagementServer) ListConnector(context.Context, *ListConnectorRequest) (*ListConnectorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListConnector not implemented")
-}
-func (UnimplementedManagementServer) AddConnector(context.Context, *AddConnectorRequest) (*AddConnectorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AddConnector not implemented")
-}
-func (UnimplementedManagementServer) DelConnector(context.Context, *DelConnectorRequest) (*DelConnectorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DelConnector not implemented")
-}
-func (UnimplementedManagementServer) TestConnector(context.Context, *TestConnectorRequest) (*TestConnectorResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method TestConnector not implemented")
 }
 func (UnimplementedManagementServer) mustEmbedUnimplementedManagementServer() {}
 
@@ -482,78 +422,6 @@ func _Management_DelShell_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Management_ListConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListConnectorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ManagementServer).ListConnector(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Management_ListConnector_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagementServer).ListConnector(ctx, req.(*ListConnectorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Management_AddConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddConnectorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ManagementServer).AddConnector(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Management_AddConnector_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagementServer).AddConnector(ctx, req.(*AddConnectorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Management_DelConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DelConnectorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ManagementServer).DelConnector(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Management_DelConnector_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagementServer).DelConnector(ctx, req.(*DelConnectorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Management_TestConnector_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TestConnectorRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ManagementServer).TestConnector(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Management_TestConnector_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ManagementServer).TestConnector(ctx, req.(*TestConnectorRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // Management_ServiceDesc is the grpc.ServiceDesc for Management service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -604,22 +472,6 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelShell",
 			Handler:    _Management_DelShell_Handler,
-		},
-		{
-			MethodName: "ListConnector",
-			Handler:    _Management_ListConnector_Handler,
-		},
-		{
-			MethodName: "AddConnector",
-			Handler:    _Management_AddConnector_Handler,
-		},
-		{
-			MethodName: "DelConnector",
-			Handler:    _Management_DelConnector_Handler,
-		},
-		{
-			MethodName: "TestConnector",
-			Handler:    _Management_TestConnector_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

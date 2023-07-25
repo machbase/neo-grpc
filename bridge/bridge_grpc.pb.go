@@ -257,9 +257,9 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	Runtime_Exec_FullMethodName        = "/bridge.Runtime/Exec"
-	Runtime_ResultFetch_FullMethodName = "/bridge.Runtime/ResultFetch"
-	Runtime_ResultClose_FullMethodName = "/bridge.Runtime/ResultClose"
+	Runtime_Exec_FullMethodName                = "/bridge.Runtime/Exec"
+	Runtime_SqlQueryResultFetch_FullMethodName = "/bridge.Runtime/SqlQueryResultFetch"
+	Runtime_SqlQueryResultClose_FullMethodName = "/bridge.Runtime/SqlQueryResultClose"
 )
 
 // RuntimeClient is the client API for Runtime service.
@@ -267,8 +267,8 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RuntimeClient interface {
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
-	ResultFetch(ctx context.Context, in *Result, opts ...grpc.CallOption) (*ResultFetchResponse, error)
-	ResultClose(ctx context.Context, in *Result, opts ...grpc.CallOption) (*ResultCloseResponse, error)
+	SqlQueryResultFetch(ctx context.Context, in *SqlQueryResult, opts ...grpc.CallOption) (*SqlQueryResultFetchResponse, error)
+	SqlQueryResultClose(ctx context.Context, in *SqlQueryResult, opts ...grpc.CallOption) (*SqlQueryResultCloseResponse, error)
 }
 
 type runtimeClient struct {
@@ -288,18 +288,18 @@ func (c *runtimeClient) Exec(ctx context.Context, in *ExecRequest, opts ...grpc.
 	return out, nil
 }
 
-func (c *runtimeClient) ResultFetch(ctx context.Context, in *Result, opts ...grpc.CallOption) (*ResultFetchResponse, error) {
-	out := new(ResultFetchResponse)
-	err := c.cc.Invoke(ctx, Runtime_ResultFetch_FullMethodName, in, out, opts...)
+func (c *runtimeClient) SqlQueryResultFetch(ctx context.Context, in *SqlQueryResult, opts ...grpc.CallOption) (*SqlQueryResultFetchResponse, error) {
+	out := new(SqlQueryResultFetchResponse)
+	err := c.cc.Invoke(ctx, Runtime_SqlQueryResultFetch_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *runtimeClient) ResultClose(ctx context.Context, in *Result, opts ...grpc.CallOption) (*ResultCloseResponse, error) {
-	out := new(ResultCloseResponse)
-	err := c.cc.Invoke(ctx, Runtime_ResultClose_FullMethodName, in, out, opts...)
+func (c *runtimeClient) SqlQueryResultClose(ctx context.Context, in *SqlQueryResult, opts ...grpc.CallOption) (*SqlQueryResultCloseResponse, error) {
+	out := new(SqlQueryResultCloseResponse)
+	err := c.cc.Invoke(ctx, Runtime_SqlQueryResultClose_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -311,8 +311,8 @@ func (c *runtimeClient) ResultClose(ctx context.Context, in *Result, opts ...grp
 // for forward compatibility
 type RuntimeServer interface {
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
-	ResultFetch(context.Context, *Result) (*ResultFetchResponse, error)
-	ResultClose(context.Context, *Result) (*ResultCloseResponse, error)
+	SqlQueryResultFetch(context.Context, *SqlQueryResult) (*SqlQueryResultFetchResponse, error)
+	SqlQueryResultClose(context.Context, *SqlQueryResult) (*SqlQueryResultCloseResponse, error)
 	mustEmbedUnimplementedRuntimeServer()
 }
 
@@ -323,11 +323,11 @@ type UnimplementedRuntimeServer struct {
 func (UnimplementedRuntimeServer) Exec(context.Context, *ExecRequest) (*ExecResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Exec not implemented")
 }
-func (UnimplementedRuntimeServer) ResultFetch(context.Context, *Result) (*ResultFetchResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResultFetch not implemented")
+func (UnimplementedRuntimeServer) SqlQueryResultFetch(context.Context, *SqlQueryResult) (*SqlQueryResultFetchResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SqlQueryResultFetch not implemented")
 }
-func (UnimplementedRuntimeServer) ResultClose(context.Context, *Result) (*ResultCloseResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ResultClose not implemented")
+func (UnimplementedRuntimeServer) SqlQueryResultClose(context.Context, *SqlQueryResult) (*SqlQueryResultCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SqlQueryResultClose not implemented")
 }
 func (UnimplementedRuntimeServer) mustEmbedUnimplementedRuntimeServer() {}
 
@@ -360,38 +360,38 @@ func _Runtime_Exec_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Runtime_ResultFetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Result)
+func _Runtime_SqlQueryResultFetch_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SqlQueryResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RuntimeServer).ResultFetch(ctx, in)
+		return srv.(RuntimeServer).SqlQueryResultFetch(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Runtime_ResultFetch_FullMethodName,
+		FullMethod: Runtime_SqlQueryResultFetch_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RuntimeServer).ResultFetch(ctx, req.(*Result))
+		return srv.(RuntimeServer).SqlQueryResultFetch(ctx, req.(*SqlQueryResult))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Runtime_ResultClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Result)
+func _Runtime_SqlQueryResultClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SqlQueryResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(RuntimeServer).ResultClose(ctx, in)
+		return srv.(RuntimeServer).SqlQueryResultClose(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Runtime_ResultClose_FullMethodName,
+		FullMethod: Runtime_SqlQueryResultClose_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RuntimeServer).ResultClose(ctx, req.(*Result))
+		return srv.(RuntimeServer).SqlQueryResultClose(ctx, req.(*SqlQueryResult))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -408,12 +408,12 @@ var Runtime_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Runtime_Exec_Handler,
 		},
 		{
-			MethodName: "ResultFetch",
-			Handler:    _Runtime_ResultFetch_Handler,
+			MethodName: "SqlQueryResultFetch",
+			Handler:    _Runtime_SqlQueryResultFetch_Handler,
 		},
 		{
-			MethodName: "ResultClose",
-			Handler:    _Runtime_ResultClose_Handler,
+			MethodName: "SqlQueryResultClose",
+			Handler:    _Runtime_SqlQueryResultClose_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -14,8 +14,8 @@ service Management {
 
 service Runtime {
     rpc Exec(ExecRequest) returns (ExecResponse) {}
-    rpc ResultFetch(Result) returns(ResultFetchResponse) {}
-    rpc ResultClose(Result) returns (ResultCloseResponse) {}
+    rpc SqlQueryResultFetch(SqlQueryResult) returns (SqlQueryResultFetchResponse) {}
+    rpc SqlQueryResultClose(SqlQueryResult) returns (SqlQueryResultCloseResponse) {}
 }
 
 message ListBridgeRequest{
@@ -79,30 +79,45 @@ message TestBridgeResponse{
 
 message ExecRequest {
     string name = 1;
-    string command = 2;
-    repeated Datum params = 3;
+    oneof command {
+        SqlRequest sqlExec = 2;
+        SqlRequest sqlQuery = 3;
+    }
+}
+
+message SqlRequest {
+    string sqlText = 1;
+    repeated Datum params = 2;
 }
 
 message ExecResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
-    Result result =4;
+    oneof result {
+        SqlExecResult sqlExecResult = 4;
+        SqlQueryResult sqlQueryResult = 5;
+    }
 }
 
-message Result {
+message SqlExecResult {
+    int64 lastInsertedId = 1;
+    int64 rowsAffected = 2;
+}
+
+message SqlQueryResult {
     string handle = 1;
-    repeated ResultField fields = 4;
+    repeated SqlQueryResultField fields = 4;
 }
 
-message ResultField {
+message SqlQueryResultField {
     string name = 1;
     string type = 2;
     int32 size = 3;
     int32 length = 4;
 }
 
-message ResultFetchResponse {
+message SqlQueryResultFetchResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
@@ -127,7 +142,7 @@ message Datum {
     }
 }
 
-message ResultCloseResponse {
+message SqlQueryResultCloseResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;

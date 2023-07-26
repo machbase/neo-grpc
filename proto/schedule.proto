@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package schedule;
+
+option go_package = "github.com/machbase/neo-grpc/scheduler";
+
+service Management {
+    rpc ListSchedule(ListScheduleRequest) returns (ListScheduleResponse) {}
+    rpc AddSchedule(AddScheduleRequest) returns (AddScheduleResponse) {}
+    rpc GetSchedule(GetScheduleRequest) returns (GetScheduleResponse) {}
+    rpc DelSchedule(DelScheduleRequest) returns (DelScheduleResponse) {}
+}
+
+message ListScheduleRequest{
+}
+
+message ListScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    repeated Schedule schedules = 4;
+}
+
+message Schedule {
+    string id = 1;
+    string name = 2;
+    string type = 3;
+    bool autoStart = 4;
+    string state = 5;
+    string task = 6;
+
+    string schedule = 7;
+
+    string bridge = 8;
+    string topic = 9;
+    string qos = 10;
+}
+
+message AddScheduleRequest {
+    string name = 1;
+    string type = 2;
+    bool autoStart = 3;
+    string task = 4;
+
+    string schedule = 5;
+
+    string bridge = 6;
+    string topic = 7;
+    string qos = 8;
+}
+
+message AddScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message GetScheduleRequest {
+    string id = 1;
+}
+
+message GetScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    Schedule schedule = 4;
+}
+
+message DelScheduleRequest {
+    string id = 1;
+}
+
+message DelScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}

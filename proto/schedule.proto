@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package schedule;
 
-option go_package = "github.com/machbase/neo-grpc/scheduler";
+option go_package = "github.com/machbase/neo-grpc/schedule";
 
 service Management {
     rpc ListSchedule(ListScheduleRequest) returns (ListScheduleResponse) {}
@@ -33,7 +33,7 @@ message Schedule {
 
     string bridge = 8;
     string topic = 9;
-    string qos = 10;
+    int32 QoS = 10;
 }
 
 message AddScheduleRequest {
@@ -46,7 +46,7 @@ message AddScheduleRequest {
 
     string bridge = 6;
     string topic = 7;
-    string qos = 8;
+    int32 QoS = 8;
 }
 
 message AddScheduleResponse {

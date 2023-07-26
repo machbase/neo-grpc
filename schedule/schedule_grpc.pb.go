@@ -4,7 +4,7 @@
 // - protoc             v3.21.12
 // source: schedule.proto
 
-package scheduler
+package schedule
 
 import (
 	context "context"

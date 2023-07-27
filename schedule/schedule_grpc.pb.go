@@ -19,10 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Management_ListSchedule_FullMethodName = "/schedule.Management/ListSchedule"
-	Management_AddSchedule_FullMethodName  = "/schedule.Management/AddSchedule"
-	Management_GetSchedule_FullMethodName  = "/schedule.Management/GetSchedule"
-	Management_DelSchedule_FullMethodName  = "/schedule.Management/DelSchedule"
+	Management_ListSchedule_FullMethodName  = "/schedule.Management/ListSchedule"
+	Management_AddSchedule_FullMethodName   = "/schedule.Management/AddSchedule"
+	Management_GetSchedule_FullMethodName   = "/schedule.Management/GetSchedule"
+	Management_DelSchedule_FullMethodName   = "/schedule.Management/DelSchedule"
+	Management_StartSchedule_FullMethodName = "/schedule.Management/StartSchedule"
+	Management_StopSchedule_FullMethodName  = "/schedule.Management/StopSchedule"
 )
 
 // ManagementClient is the client API for Management service.
@@ -33,6 +35,8 @@ type ManagementClient interface {
 	AddSchedule(ctx context.Context, in *AddScheduleRequest, opts ...grpc.CallOption) (*AddScheduleResponse, error)
 	GetSchedule(ctx context.Context, in *GetScheduleRequest, opts ...grpc.CallOption) (*GetScheduleResponse, error)
 	DelSchedule(ctx context.Context, in *DelScheduleRequest, opts ...grpc.CallOption) (*DelScheduleResponse, error)
+	StartSchedule(ctx context.Context, in *StartScheduleRequest, opts ...grpc.CallOption) (*StartScheduleResponse, error)
+	StopSchedule(ctx context.Context, in *StopScheduleRequest, opts ...grpc.CallOption) (*StopScheduleResponse, error)
 }
 
 type managementClient struct {
@@ -79,6 +83,24 @@ func (c *managementClient) DelSchedule(ctx context.Context, in *DelScheduleReque
 	return out, nil
 }
 
+func (c *managementClient) StartSchedule(ctx context.Context, in *StartScheduleRequest, opts ...grpc.CallOption) (*StartScheduleResponse, error) {
+	out := new(StartScheduleResponse)
+	err := c.cc.Invoke(ctx, Management_StartSchedule_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *managementClient) StopSchedule(ctx context.Context, in *StopScheduleRequest, opts ...grpc.CallOption) (*StopScheduleResponse, error) {
+	out := new(StopScheduleResponse)
+	err := c.cc.Invoke(ctx, Management_StopSchedule_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ManagementServer is the server API for Management service.
 // All implementations must embed UnimplementedManagementServer
 // for forward compatibility
@@ -87,6 +109,8 @@ type ManagementServer interface {
 	AddSchedule(context.Context, *AddScheduleRequest) (*AddScheduleResponse, error)
 	GetSchedule(context.Context, *GetScheduleRequest) (*GetScheduleResponse, error)
 	DelSchedule(context.Context, *DelScheduleRequest) (*DelScheduleResponse, error)
+	StartSchedule(context.Context, *StartScheduleRequest) (*StartScheduleResponse, error)
+	StopSchedule(context.Context, *StopScheduleRequest) (*StopScheduleResponse, error)
 	mustEmbedUnimplementedManagementServer()
 }
 
@@ -105,6 +129,12 @@ func (UnimplementedManagementServer) GetSchedule(context.Context, *GetScheduleRe
 }
 func (UnimplementedManagementServer) DelSchedule(context.Context, *DelScheduleRequest) (*DelScheduleResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DelSchedule not implemented")
+}
+func (UnimplementedManagementServer) StartSchedule(context.Context, *StartScheduleRequest) (*StartScheduleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartSchedule not implemented")
+}
+func (UnimplementedManagementServer) StopSchedule(context.Context, *StopScheduleRequest) (*StopScheduleResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopSchedule not implemented")
 }
 func (UnimplementedManagementServer) mustEmbedUnimplementedManagementServer() {}
 
@@ -191,6 +221,42 @@ func _Management_DelSchedule_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Management_StartSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).StartSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Management_StartSchedule_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).StartSchedule(ctx, req.(*StartScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Management_StopSchedule_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StopScheduleRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ManagementServer).StopSchedule(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Management_StopSchedule_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ManagementServer).StopSchedule(ctx, req.(*StopScheduleRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Management_ServiceDesc is the grpc.ServiceDesc for Management service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -213,6 +279,14 @@ var Management_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DelSchedule",
 			Handler:    _Management_DelSchedule_Handler,
+		},
+		{
+			MethodName: "StartSchedule",
+			Handler:    _Management_StartSchedule_Handler,
+		},
+		{
+			MethodName: "StopSchedule",
+			Handler:    _Management_StopSchedule_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

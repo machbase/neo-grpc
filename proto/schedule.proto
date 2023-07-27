@@ -9,6 +9,8 @@ service Management {
     rpc AddSchedule(AddScheduleRequest) returns (AddScheduleResponse) {}
     rpc GetSchedule(GetScheduleRequest) returns (GetScheduleResponse) {}
     rpc DelSchedule(DelScheduleRequest) returns (DelScheduleResponse) {}
+    rpc StartSchedule(StartScheduleRequest) returns (StartScheduleResponse) {}
+    rpc StopSchedule(StopScheduleRequest) returns (StopScheduleResponse) {}
 }
 
 message ListScheduleRequest{
@@ -22,18 +24,17 @@ message ListScheduleResponse {
 }
 
 message Schedule {
-    string id = 1;
-    string name = 2;
-    string type = 3;
-    bool autoStart = 4;
-    string state = 5;
-    string task = 6;
+    string name = 1;
+    string type = 2;
+    bool autoStart = 3;
+    string state = 4;
+    string task = 5;
 
-    string schedule = 7;
+    string schedule = 6;
 
-    string bridge = 8;
-    string topic = 9;
-    int32 QoS = 10;
+    string bridge = 7;
+    string topic = 8;
+    int32 QoS = 9;
 }
 
 message AddScheduleRequest {
@@ -56,7 +57,7 @@ message AddScheduleResponse {
 }
 
 message GetScheduleRequest {
-    string id = 1;
+    string name = 1;
 }
 
 message GetScheduleResponse {
@@ -67,10 +68,30 @@ message GetScheduleResponse {
 }
 
 message DelScheduleRequest {
-    string id = 1;
+    string name = 1;
 }
 
 message DelScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message StartScheduleRequest {
+    string name = 1;
+}
+
+message StartScheduleResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message StopScheduleRequest {
+    string name = 1;
+}
+
+message StopScheduleResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;

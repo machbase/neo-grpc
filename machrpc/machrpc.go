@@ -140,6 +140,10 @@ func toSpiServerInfo(info *ServerInfo) *spi.ServerInfo {
 	}
 }
 
+func (client *Client) MachbaseClient() MachbaseClient {
+	return client.cli
+}
+
 func (client *Client) GetServicePorts(svc string) ([]*spi.ServicePort, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()

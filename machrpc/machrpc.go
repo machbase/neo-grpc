@@ -35,6 +35,10 @@ type Client struct {
 	appendTimeout time.Duration
 }
 
+var _ spi.DatabaseClient = &Client{}
+var _ spi.DatabaseAuth = &Client{}
+var _ spi.DatabaseAux = &Client{}
+
 // NewClient creates new instance of Client.
 func NewClient(opts ...Option) spi.DatabaseClient {
 	client := &Client{
@@ -95,6 +99,51 @@ func (client *Client) UserAuth(user string, password string) (bool, error) {
 		return false, errors.New(rsp.Reason)
 	}
 	return true, nil
+}
+
+func (client *Client) GetInflights() ([]*spi.Inflight, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &ServerInfoRequest{Inflights: true}
+	rsp, err := client.cli.GetServerInfo(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if !rsp.Success {
+		return nil, errors.New(rsp.Reason)
+	}
+	ret := make([]*spi.Inflight, len(rsp.Inflights))
+	for i, item := range rsp.Inflights {
+		ret[i] = &spi.Inflight{
+			Id:      item.Id,
+			Type:    item.Type,
+			SqlText: item.SqlText,
+			Elapsed: time.Duration(item.ElapsedTime),
+		}
+	}
+	return ret, nil
+}
+
+func (client *Client) GetPostflights() ([]*spi.Postflight, error) {
+	ctx, cancelFunc := client.queryContext()
+	defer cancelFunc()
+	req := &ServerInfoRequest{Postflights: true}
+	rsp, err := client.cli.GetServerInfo(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if !rsp.Success {
+		return nil, errors.New(rsp.Reason)
+	}
+	ret := make([]*spi.Postflight, len(rsp.Postflights))
+	for i, item := range rsp.Postflights {
+		ret[i] = &spi.Postflight{
+			SqlText:   item.SqlText,
+			Count:     item.Count,
+			TotalTime: time.Duration(item.TotalTime),
+		}
+	}
+	return ret, nil
 }
 
 // GetServerInfo invoke gRPC call to get ServerInfo

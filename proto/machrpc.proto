@@ -178,6 +178,8 @@ message UserAuthResponse {
 }
 
 message ServerInfoRequest {
+    bool inflights = 1;
+    bool postflights = 2;
 }
 
 message ServerInfo {
@@ -186,6 +188,8 @@ message ServerInfo {
     string elapse = 3;
     Version version = 4;
     Runtime runtime = 5;
+    repeated Inflight inflights = 6;
+    repeated Postflight postflights = 7;
 }
 
 message Version {
@@ -211,6 +215,19 @@ message Runtime {
     uint64  memHeapInUse  = 10;
     uint64  memStackSys   = 11;
     uint64  memStackInUse = 12;
+}
+
+message Inflight {
+    string id = 1;
+    string type = 2;
+    string sqlText = 3;
+    int64  elapsedTime = 4;
+}
+
+message Postflight {
+    string sqlText = 1;
+    int64 count = 2;
+    int64 totalTime = 3;
 }
 
 message ServicePortsRequest {

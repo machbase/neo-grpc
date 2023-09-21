@@ -700,7 +700,7 @@ func (appender *Appender) Append(cols ...any) error {
 	if err != nil {
 		return err
 	}
-	appender.flush(&AppendRecord{Tuple: params})
+	err = appender.flush(&AppendRecord{Tuple: params})
 	return err
 }
 

@@ -33,6 +33,8 @@ type Client struct {
 	closeTimeout  time.Duration
 	queryTimeout  time.Duration
 	appendTimeout time.Duration
+
+	closeOnce sync.Once
 }
 
 var _ spi.DatabaseClient = &Client{}
@@ -40,7 +42,7 @@ var _ spi.DatabaseAuth = &Client{}
 var _ spi.DatabaseAux = &Client{}
 
 // NewClient creates new instance of Client.
-func NewClient(opts ...Option) spi.DatabaseClient {
+func NewClient(opts ...Option) (spi.DatabaseClient, error) {
 	client := &Client{
 		closeTimeout:  3 * time.Second,
 		queryTimeout:  0,
@@ -49,27 +51,34 @@ func NewClient(opts ...Option) spi.DatabaseClient {
 	for _, o := range opts {
 		o(client)
 	}
-	return client
-}
 
-// Connect make a connection to the server
-func (client *Client) Connect() error {
 	if client.serverAddr == "" {
-		return errors.New("server address is not specified")
+		return nil, errors.New("server address is not specified")
 	}
-	conn, err := MakeGrpcTlsConn(client.serverAddr, client.keyPath, client.certPath, client.serverCert)
+
+	var conn grpc.ClientConnInterface
+	var err error
+
+	if client.keyPath != "" && client.certPath != "" && client.serverCert != "" {
+		conn, err = MakeGrpcTlsConn(client.serverAddr, client.keyPath, client.certPath, client.serverCert)
+	} else {
+		conn, err = MakeGrpcConn(client.serverAddr, nil)
+	}
+
 	if err != nil {
-		return errors.Wrap(err, "NewClient")
+		return nil, errors.Wrap(err, "NewClient")
 	}
 	client.conn = conn
 	client.cli = NewMachbaseClient(conn)
-	return nil
+
+	return client, nil
 }
 
-// Disconnect release connection to the server.
-func (client *Client) Disconnect() {
-	client.conn = nil
-	client.cli = nil
+func (client *Client) Close() {
+	client.closeOnce.Do(func() {
+		client.conn = nil
+		client.cli = nil
+	})
 }
 
 func (client *Client) Ping() (time.Duration, error) {
@@ -235,17 +244,55 @@ func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-// Exec executes SQL statements that does not return result
-// like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
-func (client *Client) Exec(sqlText string, params ...any) spi.Result {
-	ctx, cancelFunc := client.queryContext()
-	defer cancelFunc()
-	return client.ExecContext(ctx, sqlText, params...)
+func WithPassword(username string, password string) spi.ConnectOption {
+	return func(c spi.Conn) {
+		if conn, ok := c.(*ClientConn); ok {
+			conn.dbUser = username
+			conn.dbPassword = password
+		}
+	}
+}
+
+// Connect make a connection to the server
+func (client *Client) Connect(ctx context.Context, opts ...spi.ConnectOption) (spi.Conn, error) {
+	ret := &ClientConn{client: client}
+	for _, o := range opts {
+		o(ret)
+	}
+
+	if ret.dbUser == "" {
+		return nil, errors.New("no db user specified")
+	}
+	auth, err := client.UserAuth(ret.dbUser, ret.dbPassword)
+	if err != nil {
+		return nil, err
+	}
+	if !auth {
+		return nil, errors.Errorf("invalid db user or password")
+	}
+
+	return ret, nil
+}
+
+type ClientConn struct {
+	client *Client
+
+	dbUser     string
+	dbPassword string
+
+	closeOnce sync.Once
+}
+
+var _ spi.Conn = &ClientConn{}
+
+func (conn *ClientConn) Close() error {
+	conn.closeOnce.Do(func() {})
+	return nil
 }
 
 // Exec executes SQL statements that does not return result
 // like 'ALTER', 'CREATE TABLE', 'DROP TABLE', ...
-func (client *Client) ExecContext(ctx context.Context, sqlText string, params ...any) spi.Result {
+func (conn *ClientConn) Exec(ctx context.Context, sqlText string, params ...any) spi.Result {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return &ExecResult{err: err}
@@ -254,7 +301,7 @@ func (client *Client) ExecContext(ctx context.Context, sqlText string, params ..
 		Sql:    sqlText,
 		Params: pbparams,
 	}
-	rsp, err := client.cli.Exec(ctx, req)
+	rsp, err := conn.client.cli.Exec(ctx, req)
 	if err != nil {
 		return &ExecResult{err: err}
 	}
@@ -285,46 +332,30 @@ func (r *ExecResult) Message() string {
 // Query executes SQL statements that are expected multipe rows as result.
 // Commonly used to execute 'SELECT * FROM <TABLE>'
 //
-// Rows returned by Query() must be closed to prevent leaking resources.
-//
-//	rows, err := client.Query("select * from my_table where name = ?", "my_name")
-//	if err != nil {
-//		panic(err)
-//	}
-//	defer rows.Close()
-func (client *Client) Query(sqlText string, params ...any) (spi.Rows, error) {
-	ctx, cancelFunc := client.queryContext()
-	defer cancelFunc()
-	return client.QueryContext(ctx, sqlText, params...)
-}
-
-// Query executes SQL statements that are expected multipe rows as result.
-// Commonly used to execute 'SELECT * FROM <TABLE>'
-//
 // Rows returned by QueryContext() must be closed to prevent leaking resources.
 //
 //	ctx, cancelFunc := context.WithTimeout(5*time.Second)
 //	defer cancelFunc()
 //
-//	rows, err := client.QueryContext(ctx, "select * from my_table where name = ?", my_name)
+//	rows, err := client.Query(ctx, "select * from my_table where name = ?", my_name)
 //	if err != nil {
 //		panic(err)
 //	}
 //	defer rows.Close()
-func (client *Client) QueryContext(ctx context.Context, sqlText string, params ...any) (spi.Rows, error) {
+func (conn *ClientConn) Query(ctx context.Context, sqlText string, params ...any) (spi.Rows, error) {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return nil, err
 	}
 
 	req := &QueryRequest{Sql: sqlText, Params: pbparams}
-	rsp, err := client.cli.Query(ctx, req)
+	rsp, err := conn.client.cli.Query(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	if rsp.Success {
-		return &Rows{client: client, rowsAffected: rsp.RowsAffected, message: rsp.Reason, handle: rsp.RowsHandle}, nil
+		return &Rows{client: conn.client, rowsAffected: rsp.RowsAffected, message: rsp.Reason, handle: rsp.RowsHandle}, nil
 	} else {
 		if len(rsp.Reason) > 0 {
 			return nil, errors.New(rsp.Reason)
@@ -455,22 +486,16 @@ func (rows *Rows) Scan(cols ...any) error {
 // QueryRow executes a SQL statement that expects a single row result.
 //
 //	var cnt int
-//	row := client.QueryRoq("select count(*) from my_table where name = ?", "my_name")
+//	row := client.QueryRow(ctx, "select count(*) from my_table where name = ?", "my_name")
 //	row.Scan(&cnt)
-func (client *Client) QueryRow(sqlText string, params ...any) spi.Row {
-	ctx, cancelFunc := client.queryContext()
-	defer cancelFunc()
-	return client.QueryRowContext(ctx, sqlText, params...)
-}
-
-func (client *Client) QueryRowContext(ctx context.Context, sqlText string, params ...any) spi.Row {
+func (conn *ClientConn) QueryRow(ctx context.Context, sqlText string, params ...any) spi.Row {
 	pbparams, err := ConvertAnyToPb(params)
 	if err != nil {
 		return &Row{success: false, err: err}
 	}
 
 	req := &QueryRowRequest{Sql: sqlText, Params: pbparams}
-	rsp, err := client.cli.QueryRow(ctx, req)
+	rsp, err := conn.client.cli.QueryRow(ctx, req)
 	if err != nil {
 		return &Row{success: false, err: err}
 	}
@@ -587,13 +612,13 @@ func scan(src []any, dst []any) error {
 // Appender creates a new Appender for the given table.
 // Appender should be closed otherwise it may cause server side resource leak.
 //
-//	app, _ := client.Appender("MYTABLE")
+//	app, _ := client.Appender(ctx, "MYTABLE")
 //	defer app.Close()
 //	app.Append("name", time.Now(), 3.14)
-func (client *Client) Appender(tableName string, opts ...spi.AppendOption) (spi.Appender, error) {
+func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...spi.AppendOption) (spi.Appender, error) {
 	var ctx0 context.Context
-	if client.appendTimeout > 0 {
-		_ctx, _cf := context.WithTimeout(context.Background(), client.appendTimeout)
+	if conn.client.appendTimeout > 0 {
+		_ctx, _cf := context.WithTimeout(context.Background(), conn.client.appendTimeout)
 		defer _cf()
 		ctx0 = _ctx
 	} else {
@@ -611,7 +636,7 @@ func (client *Client) Appender(tableName string, opts ...spi.AppendOption) (spi.
 		}
 	}
 
-	openRsp, err := client.cli.Appender(ctx0, &AppenderRequest{
+	openRsp, err := conn.client.cli.Appender(ctx0, &AppenderRequest{
 		TableName:  tableName,
 		Timeformat: timeformat,
 	})
@@ -623,13 +648,13 @@ func (client *Client) Appender(tableName string, opts ...spi.AppendOption) (spi.
 		return nil, errors.New(openRsp.Reason)
 	}
 
-	appendClient, err := client.cli.Append(context.Background())
+	appendClient, err := conn.client.cli.Append(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "AppendClient")
 	}
 
 	ap := &Appender{
-		client:       client,
+		client:       conn.client,
 		appendClient: appendClient,
 		tableName:    openRsp.TableName,
 		tableType:    spi.TableType(openRsp.TableType),

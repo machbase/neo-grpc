@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/url"
+	"time"
 
 	"github.com/machbase/neo-grpc/machrpc"
 	spi "github.com/machbase/neo-spi"
@@ -30,36 +31,11 @@ type DataSource struct {
 	ServerCert string
 	ClientKey  string
 	ClientCert string
+	User       string
+	Password   string
 }
 
-type NeoDriver struct {
-}
-
-var _ driver.Driver = &NeoDriver{}
-var _ driver.DriverContext = &NeoDriver{}
-
-func parseDataSourceName(name string) (addr string, certPath string) {
-	u, err := url.Parse(name)
-	if err != nil {
-		return name, ""
-	}
-	addr = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
-	vals := u.Query()
-	if serverCerts, ok := vals["server-cert"]; ok && len(serverCerts) > 0 {
-		serverCert := serverCerts[0]
-		return addr, serverCert
-	}
-	return addr, ""
-}
-
-func makeClient(dsn string) spi.DatabaseClient {
-	var conf *DataSource
-	if c, ok := configReigstry[dsn]; ok {
-		conf = c
-	} else {
-		addr, certPath := parseDataSourceName(dsn)
-		conf = &DataSource{ServerAddr: addr, ServerCert: certPath}
-	}
+func (conf *DataSource) newClient() (spi.DatabaseClient, error) {
 	opts := []machrpc.Option{
 		machrpc.WithServer(conf.ServerAddr),
 		machrpc.WithCertificate(conf.ClientKey, conf.ClientCert, conf.ServerCert),
@@ -68,47 +44,125 @@ func makeClient(dsn string) spi.DatabaseClient {
 	return machrpc.NewClient(opts...)
 }
 
-func (d *NeoDriver) Open(name string) (driver.Conn, error) {
-	client := makeClient(name)
-	err := client.Connect()
-	if err != nil {
-		return nil, err
-	}
-
-	conn := &NeoConn{
-		name:   name,
-		client: client,
-	}
-	return conn, nil
+type NeoDriver struct {
 }
 
-func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
-	client := makeClient(name)
-	err := client.Connect()
+var _ driver.Driver = &NeoDriver{}
+var _ driver.DriverContext = &NeoDriver{}
+
+func parseDataSourceName(name string) (*DataSource, error) {
+	u, err := url.Parse(name)
 	if err != nil {
 		return nil, err
 	}
+	addr := fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.Path)
+	var user, password string
+	if u.User != nil {
+		user = u.User.Username()
+		password, _ = u.User.Password()
+	}
+	vals := u.Query()
+	var serverCert string
+	if serverCerts, ok := vals["server-cert"]; ok && len(serverCerts) > 0 {
+		serverCert = serverCerts[0]
+	}
+	return &DataSource{
+		ServerAddr: addr,
+		ServerCert: serverCert,
+		User:       user,
+		Password:   password,
+	}, nil
+}
+
+func makeClientConfig(dsn string) (*DataSource, error) {
+	var conf *DataSource
+	if c, ok := configReigstry[dsn]; ok {
+		conf = c
+	} else {
+		parsedConf, err := parseDataSourceName(dsn)
+		if err != nil {
+			return nil, err
+		}
+		conf = parsedConf
+	}
+	return conf, nil
+}
+
+// implments sql.Driver
+func (d *NeoDriver) Open(name string) (driver.Conn, error) {
+	ds, err := makeClientConfig(name)
+	if err != nil {
+		return nil, err
+	}
+	client, err := ds.newClient()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	conn, err := client.Connect(ctx, machrpc.WithPassword(ds.User, ds.Password))
+	if err != nil {
+		return nil, err
+	}
+
+	ret := &NeoConn{
+		name: name,
+		conn: conn,
+	}
+	return ret, nil
+}
+
+// implements sql.DriverContext
+func (d *NeoDriver) OpenConnector(name string) (driver.Connector, error) {
+	ds, err := makeClientConfig(name)
+	if err != nil {
+		return nil, err
+	}
+	client, err := ds.newClient()
+	if err != nil {
+		return nil, err
+	}
+
+	if auth, ok := client.(spi.DatabaseAuth); ok {
+		ok, err := auth.UserAuth(ds.User, ds.Password)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return nil, fmt.Errorf("invalid username or password")
+		}
+	}
 	conn := &NeoConnector{
-		name:   name,
-		driver: d,
-		client: client,
+		name:     name,
+		driver:   d,
+		client:   client,
+		user:     ds.User,
+		password: ds.Password,
 	}
 	return conn, nil
 }
 
 type NeoConnector struct {
 	driver.Connector
-	name   string
-	driver *NeoDriver
-	client spi.DatabaseClient
+	name     string
+	driver   *NeoDriver
+	client   spi.DatabaseClient
+	user     string
+	password string
 }
 
 func (cn *NeoConnector) Connect(ctx context.Context) (driver.Conn, error) {
-	conn := &NeoConn{
-		name:   cn.name,
-		client: cn.client,
+	conn, err := cn.client.Connect(ctx, machrpc.WithPassword(cn.user, cn.password))
+	if err != nil {
+		return nil, err
 	}
-	return conn, nil
+	ret := &NeoConn{
+		name: cn.name,
+		conn: conn,
+	}
+	return ret, nil
 }
 
 func (cn *NeoConnector) Driver() driver.Driver {
@@ -123,14 +177,14 @@ type NeoConn struct {
 	driver.ExecerContext
 	driver.ConnPrepareContext
 
-	name   string
-	client spi.DatabaseClient
+	name string
+	conn spi.Conn
 }
 
 func (c *NeoConn) Close() error {
-	if c.client != nil {
-		c.client.Disconnect()
-		c.client = nil
+	if c.conn != nil {
+		c.conn.Close()
+		c.conn = nil
 	}
 	return nil
 }
@@ -148,7 +202,7 @@ func (c *NeoConn) QueryContext(ctx context.Context, query string, args []driver.
 	for i := range args {
 		vals[i] = args[i].Value
 	}
-	rows, err := c.client.QueryContext(ctx, query, vals...)
+	rows, err := c.conn.Query(ctx, query, vals...)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +214,7 @@ func (c *NeoConn) ExecContext(ctx context.Context, query string, args []driver.N
 	for i := range args {
 		vals[i] = args[i].Value
 	}
-	row := c.client.QueryRowContext(ctx, query, vals...)
+	row := c.conn.QueryRow(ctx, query, vals...)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
@@ -174,7 +228,7 @@ func (c *NeoConn) Prepare(query string) (driver.Stmt, error) {
 func (c *NeoConn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
 	stmt := &NeoStmt{
 		ctx:     ctx,
-		conn:    c,
+		conn:    c.conn,
 		sqlText: query,
 	}
 	return stmt, nil
@@ -202,7 +256,7 @@ type NeoStmt struct {
 	driver.StmtQueryContext
 
 	ctx     context.Context
-	conn    *NeoConn
+	conn    spi.Conn
 	sqlText string
 }
 
@@ -219,7 +273,7 @@ func (stmt *NeoStmt) Exec(args []driver.Value) (driver.Result, error) {
 	for i := range args {
 		vals[i] = args[i]
 	}
-	row := stmt.conn.client.QueryRow(stmt.sqlText, vals...)
+	row := stmt.conn.QueryRow(context.TODO(), stmt.sqlText, vals...)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
@@ -231,7 +285,7 @@ func (stmt *NeoStmt) ExecContext(ctx context.Context, args []driver.NamedValue) 
 	for i := range args {
 		vals[i] = args[i].Value
 	}
-	row := stmt.conn.client.QueryRowContext(ctx, stmt.sqlText, vals...)
+	row := stmt.conn.QueryRow(ctx, stmt.sqlText, vals...)
 	if row.Err() != nil {
 		return nil, row.Err()
 	}
@@ -243,7 +297,7 @@ func (stmt *NeoStmt) Query(args []driver.Value) (driver.Rows, error) {
 	for i := range args {
 		vals[i] = args[i]
 	}
-	rows, err := stmt.conn.client.Query(stmt.sqlText, vals...)
+	rows, err := stmt.conn.Query(context.TODO(), stmt.sqlText, vals...)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +309,7 @@ func (stmt *NeoStmt) QueryContext(ctx context.Context, args []driver.NamedValue)
 	for i := range args {
 		vals[i] = args[i]
 	}
-	rows, err := stmt.conn.client.QueryContext(ctx, stmt.sqlText, vals...)
+	rows, err := stmt.conn.Query(ctx, stmt.sqlText, vals...)
 	if err != nil {
 		return nil, err
 	}

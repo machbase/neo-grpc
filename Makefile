@@ -26,3 +26,6 @@ regen-schedule:
 	@protoc -I proto ./proto/schedule.proto \
 		--go_out=./schedule --go_opt=paths=source_relative \
 		--go-grpc_out=./schedule --go-grpc_opt=paths=source_relative
+
+test:
+	go test -cover ./machrpc ./driver

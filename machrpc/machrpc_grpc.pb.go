@@ -19,6 +19,8 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	Machbase_Conn_FullMethodName            = "/machrpc.Machbase/Conn"
+	Machbase_ConnClose_FullMethodName       = "/machrpc.Machbase/ConnClose"
 	Machbase_Ping_FullMethodName            = "/machrpc.Machbase/Ping"
 	Machbase_Exec_FullMethodName            = "/machrpc.Machbase/Exec"
 	Machbase_QueryRow_FullMethodName        = "/machrpc.Machbase/QueryRow"
@@ -27,6 +29,7 @@ const (
 	Machbase_RowsFetch_FullMethodName       = "/machrpc.Machbase/RowsFetch"
 	Machbase_RowsClose_FullMethodName       = "/machrpc.Machbase/RowsClose"
 	Machbase_Appender_FullMethodName        = "/machrpc.Machbase/Appender"
+	Machbase_AppenderClose_FullMethodName   = "/machrpc.Machbase/AppenderClose"
 	Machbase_Append_FullMethodName          = "/machrpc.Machbase/Append"
 	Machbase_Explain_FullMethodName         = "/machrpc.Machbase/Explain"
 	Machbase_UserAuth_FullMethodName        = "/machrpc.Machbase/UserAuth"
@@ -38,6 +41,8 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type MachbaseClient interface {
+	Conn(ctx context.Context, in *ConnRequest, opts ...grpc.CallOption) (*ConnResponse, error)
+	ConnClose(ctx context.Context, in *ConnCloseRequest, opts ...grpc.CallOption) (*ConnCloseResponse, error)
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	Exec(ctx context.Context, in *ExecRequest, opts ...grpc.CallOption) (*ExecResponse, error)
 	QueryRow(ctx context.Context, in *QueryRowRequest, opts ...grpc.CallOption) (*QueryRowResponse, error)
@@ -46,6 +51,7 @@ type MachbaseClient interface {
 	RowsFetch(ctx context.Context, in *RowsHandle, opts ...grpc.CallOption) (*RowsFetchResponse, error)
 	RowsClose(ctx context.Context, in *RowsHandle, opts ...grpc.CallOption) (*RowsCloseResponse, error)
 	Appender(ctx context.Context, in *AppenderRequest, opts ...grpc.CallOption) (*AppenderResponse, error)
+	AppenderClose(ctx context.Context, in *AppenderHandle, opts ...grpc.CallOption) (*AppenderCloseResponse, error)
 	Append(ctx context.Context, opts ...grpc.CallOption) (Machbase_AppendClient, error)
 	Explain(ctx context.Context, in *ExplainRequest, opts ...grpc.CallOption) (*ExplainResponse, error)
 	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
@@ -59,6 +65,24 @@ type machbaseClient struct {
 
 func NewMachbaseClient(cc grpc.ClientConnInterface) MachbaseClient {
 	return &machbaseClient{cc}
+}
+
+func (c *machbaseClient) Conn(ctx context.Context, in *ConnRequest, opts ...grpc.CallOption) (*ConnResponse, error) {
+	out := new(ConnResponse)
+	err := c.cc.Invoke(ctx, Machbase_Conn_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *machbaseClient) ConnClose(ctx context.Context, in *ConnCloseRequest, opts ...grpc.CallOption) (*ConnCloseResponse, error) {
+	out := new(ConnCloseResponse)
+	err := c.cc.Invoke(ctx, Machbase_ConnClose_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *machbaseClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error) {
@@ -127,6 +151,15 @@ func (c *machbaseClient) RowsClose(ctx context.Context, in *RowsHandle, opts ...
 func (c *machbaseClient) Appender(ctx context.Context, in *AppenderRequest, opts ...grpc.CallOption) (*AppenderResponse, error) {
 	out := new(AppenderResponse)
 	err := c.cc.Invoke(ctx, Machbase_Appender_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *machbaseClient) AppenderClose(ctx context.Context, in *AppenderHandle, opts ...grpc.CallOption) (*AppenderCloseResponse, error) {
+	out := new(AppenderCloseResponse)
+	err := c.cc.Invoke(ctx, Machbase_AppenderClose_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +240,8 @@ func (c *machbaseClient) GetServicePorts(ctx context.Context, in *ServicePortsRe
 // All implementations must embed UnimplementedMachbaseServer
 // for forward compatibility
 type MachbaseServer interface {
+	Conn(context.Context, *ConnRequest) (*ConnResponse, error)
+	ConnClose(context.Context, *ConnCloseRequest) (*ConnCloseResponse, error)
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	Exec(context.Context, *ExecRequest) (*ExecResponse, error)
 	QueryRow(context.Context, *QueryRowRequest) (*QueryRowResponse, error)
@@ -215,6 +250,7 @@ type MachbaseServer interface {
 	RowsFetch(context.Context, *RowsHandle) (*RowsFetchResponse, error)
 	RowsClose(context.Context, *RowsHandle) (*RowsCloseResponse, error)
 	Appender(context.Context, *AppenderRequest) (*AppenderResponse, error)
+	AppenderClose(context.Context, *AppenderHandle) (*AppenderCloseResponse, error)
 	Append(Machbase_AppendServer) error
 	Explain(context.Context, *ExplainRequest) (*ExplainResponse, error)
 	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
@@ -227,6 +263,12 @@ type MachbaseServer interface {
 type UnimplementedMachbaseServer struct {
 }
 
+func (UnimplementedMachbaseServer) Conn(context.Context, *ConnRequest) (*ConnResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Conn not implemented")
+}
+func (UnimplementedMachbaseServer) ConnClose(context.Context, *ConnCloseRequest) (*ConnCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ConnClose not implemented")
+}
 func (UnimplementedMachbaseServer) Ping(context.Context, *PingRequest) (*PingResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Ping not implemented")
 }
@@ -250,6 +292,9 @@ func (UnimplementedMachbaseServer) RowsClose(context.Context, *RowsHandle) (*Row
 }
 func (UnimplementedMachbaseServer) Appender(context.Context, *AppenderRequest) (*AppenderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Appender not implemented")
+}
+func (UnimplementedMachbaseServer) AppenderClose(context.Context, *AppenderHandle) (*AppenderCloseResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AppenderClose not implemented")
 }
 func (UnimplementedMachbaseServer) Append(Machbase_AppendServer) error {
 	return status.Errorf(codes.Unimplemented, "method Append not implemented")
@@ -277,6 +322,42 @@ type UnsafeMachbaseServer interface {
 
 func RegisterMachbaseServer(s grpc.ServiceRegistrar, srv MachbaseServer) {
 	s.RegisterService(&Machbase_ServiceDesc, srv)
+}
+
+func _Machbase_Conn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConnRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).Conn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Machbase_Conn_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).Conn(ctx, req.(*ConnRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Machbase_ConnClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConnCloseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).ConnClose(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Machbase_ConnClose_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).ConnClose(ctx, req.(*ConnCloseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Machbase_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -423,6 +504,24 @@ func _Machbase_Appender_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Machbase_AppenderClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppenderHandle)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MachbaseServer).AppenderClose(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Machbase_AppenderClose_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MachbaseServer).AppenderClose(ctx, req.(*AppenderHandle))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Machbase_Append_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(MachbaseServer).Append(&machbaseAppendServer{stream})
 }
@@ -529,6 +628,14 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*MachbaseServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
+			MethodName: "Conn",
+			Handler:    _Machbase_Conn_Handler,
+		},
+		{
+			MethodName: "ConnClose",
+			Handler:    _Machbase_ConnClose_Handler,
+		},
+		{
 			MethodName: "Ping",
 			Handler:    _Machbase_Ping_Handler,
 		},
@@ -559,6 +666,10 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Appender",
 			Handler:    _Machbase_Appender_Handler,
+		},
+		{
+			MethodName: "AppenderClose",
+			Handler:    _Machbase_AppenderClose_Handler,
 		},
 		{
 			MethodName: "Explain",

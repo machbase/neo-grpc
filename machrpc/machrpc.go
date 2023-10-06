@@ -81,21 +81,6 @@ func (client *Client) Close() {
 	})
 }
 
-func (client *Client) Ping() (time.Duration, error) {
-	ctx, cancelFunc := client.queryContext()
-	defer cancelFunc()
-	tick := time.Now()
-	req := &PingRequest{Token: tick.UnixNano()}
-	rsp, err := client.cli.Ping(ctx, req)
-	if err != nil {
-		return time.Since(tick), err
-	}
-	if !rsp.Success {
-		return time.Since(tick), errors.New(rsp.Reason)
-	}
-	return time.Since(tick), nil
-}
-
 func (client *Client) UserAuth(user string, password string) (bool, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
@@ -198,10 +183,6 @@ func toSpiServerInfo(info *ServerInfo) *spi.ServerInfo {
 	}
 }
 
-func (client *Client) MachbaseClient() MachbaseClient {
-	return client.cli
-}
-
 func (client *Client) GetServicePorts(svc string) ([]*spi.ServicePort, error) {
 	ctx, cancelFunc := client.queryContext()
 	defer cancelFunc()
@@ -220,21 +201,6 @@ func (client *Client) GetServicePorts(svc string) ([]*spi.ServicePort, error) {
 	return ports, nil
 }
 
-// Explain retrieve execution plan of the given SQL statement.
-func (client *Client) Explain(sqlText string, full bool) (string, error) {
-	ctx, cancelFunc := client.queryContext()
-	defer cancelFunc()
-	req := &ExplainRequest{Sql: sqlText, Full: full}
-	rsp, err := client.cli.Explain(ctx, req)
-	if err != nil {
-		return "", err
-	}
-	if !rsp.Success {
-		return "", fmt.Errorf(rsp.Reason)
-	}
-	return rsp.Plan, nil
-}
-
 func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 	ctx := metadata.NewOutgoingContext(context.Background(), metadata.New(map[string]string{"client": "machrpc"}))
 	cancel := func() {}
@@ -244,15 +210,6 @@ func (client *Client) queryContext() (context.Context, context.CancelFunc) {
 	return ctx, cancel
 }
 
-func WithPassword(username string, password string) spi.ConnectOption {
-	return func(c spi.Conn) {
-		if conn, ok := c.(*ClientConn); ok {
-			conn.dbUser = username
-			conn.dbPassword = password
-		}
-	}
-}
-
 // Connect make a connection to the server
 func (client *Client) Connect(ctx context.Context, opts ...spi.ConnectOption) (spi.Conn, error) {
 	ret := &ClientConn{client: client}
@@ -260,34 +217,69 @@ func (client *Client) Connect(ctx context.Context, opts ...spi.ConnectOption) (s
 		o(ret)
 	}
 
-	if ret.dbUser == "" {
-		return nil, errors.New("no db user specified")
+	req := &ConnRequest{
+		User:     ret.dbUser,
+		Password: ret.dbPassword,
 	}
-	auth, err := client.UserAuth(ret.dbUser, ret.dbPassword)
+	rsp, err := client.cli.Conn(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	if !auth {
-		return nil, errors.Errorf("invalid db user or password")
-	}
 
+	if !rsp.Success {
+		return nil, errors.New(rsp.Reason)
+	}
+	ret.ctx = ctx
+	ret.handle = rsp.Conn
 	return ret, nil
 }
 
 type ClientConn struct {
+	ctx    context.Context
 	client *Client
 
 	dbUser     string
 	dbPassword string
 
+	handle    *ConnHandle
 	closeOnce sync.Once
 }
 
 var _ spi.Conn = &ClientConn{}
 
 func (conn *ClientConn) Close() error {
-	conn.closeOnce.Do(func() {})
-	return nil
+	var err error
+	conn.closeOnce.Do(func() {
+		req := &ConnCloseRequest{Conn: conn.handle}
+		_, err = conn.client.cli.ConnClose(conn.ctx, req)
+	})
+	return err
+}
+
+func (conn *ClientConn) Ping() (time.Duration, error) {
+	tick := time.Now()
+	req := &PingRequest{Conn: conn.handle, Token: tick.UnixNano()}
+	rsp, err := conn.client.cli.Ping(conn.ctx, req)
+	if err != nil {
+		return time.Since(tick), err
+	}
+	if !rsp.Success {
+		return time.Since(tick), errors.New(rsp.Reason)
+	}
+	return time.Since(tick), nil
+}
+
+// Explain retrieve execution plan of the given SQL statement.
+func (conn *ClientConn) Explain(ctx context.Context, sqlText string, full bool) (string, error) {
+	req := &ExplainRequest{Conn: conn.handle, Sql: sqlText, Full: full}
+	rsp, err := conn.client.cli.Explain(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	if !rsp.Success {
+		return "", fmt.Errorf(rsp.Reason)
+	}
+	return rsp.Plan, nil
 }
 
 // Exec executes SQL statements that does not return result
@@ -297,10 +289,7 @@ func (conn *ClientConn) Exec(ctx context.Context, sqlText string, params ...any)
 	if err != nil {
 		return &ExecResult{err: err}
 	}
-	req := &ExecRequest{
-		Sql:    sqlText,
-		Params: pbparams,
-	}
+	req := &ExecRequest{Conn: conn.handle, Sql: sqlText, Params: pbparams}
 	rsp, err := conn.client.cli.Exec(ctx, req)
 	if err != nil {
 		return &ExecResult{err: err}
@@ -348,14 +337,20 @@ func (conn *ClientConn) Query(ctx context.Context, sqlText string, params ...any
 		return nil, err
 	}
 
-	req := &QueryRequest{Sql: sqlText, Params: pbparams}
+	req := &QueryRequest{Conn: conn.handle, Sql: sqlText, Params: pbparams}
 	rsp, err := conn.client.cli.Query(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	if rsp.Success {
-		return &Rows{client: conn.client, rowsAffected: rsp.RowsAffected, message: rsp.Reason, handle: rsp.RowsHandle}, nil
+		return &Rows{
+			ctx:          ctx,
+			client:       conn.client,
+			rowsAffected: rsp.RowsAffected,
+			message:      rsp.Reason,
+			handle:       rsp.RowsHandle,
+		}, nil
 	} else {
 		if len(rsp.Reason) > 0 {
 			return nil, errors.New(rsp.Reason)
@@ -365,25 +360,30 @@ func (conn *ClientConn) Query(ctx context.Context, sqlText string, params ...any
 }
 
 type Rows struct {
+	ctx          context.Context
 	client       *Client
 	message      string
 	rowsAffected int64
 	handle       *RowsHandle
 	values       []any
 	err          error
+	closeOnce    sync.Once
 }
 
 // Close release all resources that assigned to the Rows
 func (rows *Rows) Close() error {
-	var ctx context.Context
-	if rows.client.closeTimeout > 0 {
-		ctx0, cancelFunc := context.WithTimeout(context.Background(), rows.client.closeTimeout)
-		defer cancelFunc()
-		ctx = ctx0
-	} else {
-		ctx = context.Background()
-	}
-	_, err := rows.client.cli.RowsClose(ctx, rows.handle)
+	var err error
+	rows.closeOnce.Do(func() {
+		var ctx context.Context
+		if rows.client.closeTimeout > 0 {
+			ctx0, cancelFunc := context.WithTimeout(context.Background(), rows.client.closeTimeout)
+			defer cancelFunc()
+			ctx = ctx0
+		} else {
+			ctx = context.Background()
+		}
+		_, err = rows.client.cli.RowsClose(ctx, rows.handle)
+	})
 	return err
 }
 
@@ -402,10 +402,7 @@ func (rows *Rows) RowsAffected() int64 {
 
 // Columns returns list of column info that consists of result of query statement.
 func (rows *Rows) Columns() (spi.Columns, error) {
-	ctx, cancelFunc := rows.client.queryContext()
-	defer cancelFunc()
-
-	rsp, err := rows.client.cli.Columns(ctx, rows.handle)
+	rsp, err := rows.client.cli.Columns(rows.ctx, rows.handle)
 	if err != nil {
 		return nil, err
 	}
@@ -445,9 +442,7 @@ func (rows *Rows) Next() bool {
 	if rows.err != nil {
 		return false
 	}
-	ctx, cancelFunc := rows.client.queryContext()
-	defer cancelFunc()
-	rsp, err := rows.client.cli.RowsFetch(ctx, rows.handle)
+	rsp, err := rows.client.cli.RowsFetch(rows.ctx, rows.handle)
 	if err != nil {
 		rows.err = err
 		return false
@@ -494,7 +489,7 @@ func (conn *ClientConn) QueryRow(ctx context.Context, sqlText string, params ...
 		return &Row{success: false, err: err}
 	}
 
-	req := &QueryRowRequest{Sql: sqlText, Params: pbparams}
+	req := &QueryRowRequest{Conn: conn.handle, Sql: sqlText, Params: pbparams}
 	rsp, err := conn.client.cli.QueryRow(ctx, req)
 	if err != nil {
 		return &Row{success: false, err: err}
@@ -503,6 +498,11 @@ func (conn *ClientConn) QueryRow(ctx context.Context, sqlText string, params ...
 	var row = &Row{}
 	row.success = rsp.Success
 	row.rowsAffected = rsp.RowsAffected
+	if rsp.Message == "" {
+		row.message = rsp.Reason
+	} else {
+		row.message = rsp.Message
+	}
 	row.err = nil
 	if !rsp.Success && len(rsp.Reason) > 0 {
 		row.err = errors.New(rsp.Reason)
@@ -517,6 +517,7 @@ type Row struct {
 	values  []any
 
 	rowsAffected int64
+	message      string
 }
 
 func (row *Row) Success() bool {
@@ -543,9 +544,9 @@ func (row *Row) RowsAffected() int64 {
 }
 
 func (row *Row) Message() string {
-	// TODO
-	return ""
+	return row.message
 }
+
 func (row *Row) Values() []any {
 	return row.values
 }
@@ -616,15 +617,6 @@ func scan(src []any, dst []any) error {
 //	defer app.Close()
 //	app.Append("name", time.Now(), 3.14)
 func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...spi.AppendOption) (spi.Appender, error) {
-	var ctx0 context.Context
-	if conn.client.appendTimeout > 0 {
-		_ctx, _cf := context.WithTimeout(context.Background(), conn.client.appendTimeout)
-		defer _cf()
-		ctx0 = _ctx
-	} else {
-		ctx0 = context.Background()
-	}
-
 	timeformat := "ns"
 
 	for _, opt := range opts {
@@ -636,7 +628,8 @@ func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...
 		}
 	}
 
-	openRsp, err := conn.client.cli.Appender(ctx0, &AppenderRequest{
+	openRsp, err := conn.client.cli.Appender(ctx, &AppenderRequest{
+		Conn:       conn.handle,
 		TableName:  tableName,
 		Timeformat: timeformat,
 	})
@@ -654,6 +647,7 @@ func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...
 	}
 
 	ap := &Appender{
+		ctx:          ctx,
 		client:       conn.client,
 		appendClient: appendClient,
 		tableName:    openRsp.TableName,
@@ -671,11 +665,12 @@ func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...
 }
 
 type Appender struct {
+	ctx          context.Context
 	client       *Client
 	appendClient Machbase_AppendClient
 	tableName    string
 	tableType    spi.TableType
-	handle       string
+	handle       *AppenderHandle
 
 	buffer       []*AppendRecord
 	bufferLock   sync.Mutex
@@ -700,7 +695,11 @@ func (appender *Appender) Close() (int64, int64, error) {
 	if err != nil {
 		return 0, 0, err
 	}
-	return done.SuccessCount, done.FailCount, nil
+	rsp, err := appender.client.cli.AppenderClose(appender.ctx, appender.handle)
+	if !rsp.Success {
+		err = fmt.Errorf("appender close error; %s", rsp.Reason)
+	}
+	return done.SuccessCount, done.FailCount, err
 }
 
 func (appender *Appender) TableName() string {

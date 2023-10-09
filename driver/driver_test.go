@@ -33,10 +33,17 @@ func connect(t *testing.T) *sql.DB {
 }
 
 func TestConnectFail(t *testing.T) {
-	db, err := sql.Open("machbase", fmt.Sprintf("tcp://%s", mock.MockServerAddr))
-	require.NotNil(t, err)
-	require.Equal(t, "invalid username or password", err.Error())
-	require.Nil(t, db)
+	tests := []string{
+		fmt.Sprintf("tcp://%s", mock.MockServerAddr),
+		fmt.Sprintf("tcp://sys:man@%s", mock.MockServerAddr),
+		fmt.Sprintf("tcp://sys@%s", mock.MockServerAddr),
+	}
+	for _, tt := range tests {
+		db, err := sql.Open("machbase", tt)
+		require.NotNil(t, err)
+		require.Equal(t, "invalid username or password", err.Error())
+		require.Nil(t, db)
+	}
 }
 
 func TestQuery(t *testing.T) {

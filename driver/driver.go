@@ -15,7 +15,7 @@ import (
 )
 
 func init() {
-	sql.Register("machbase", &NeoDriver{})
+	sql.Register(Name, &NeoDriver{})
 }
 
 const Name = "machbase"

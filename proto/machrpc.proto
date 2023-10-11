@@ -7,6 +7,8 @@ option go_package = "github.com/machbase/neo-grpc/machrpc";
 import "google/protobuf/any.proto";
 
 service Machbase {
+    rpc Conn(ConnRequest) returns(ConnResponse) {}
+    rpc ConnClose(ConnCloseRequest) returns (ConnCloseResponse) {}
     rpc Ping(PingRequest) returns(PingResponse) {}
     rpc Exec(ExecRequest) returns(ExecResponse) {}
     rpc QueryRow(QueryRowRequest) returns(QueryRowResponse) {}
@@ -15,6 +17,7 @@ service Machbase {
     rpc RowsFetch(RowsHandle) returns(RowsFetchResponse) {}
     rpc RowsClose(RowsHandle) returns (RowsCloseResponse) {}
     rpc Appender(AppenderRequest) returns (AppenderResponse){}
+    rpc AppenderClose(AppenderHandle) returns (AppenderCloseResponse){}
     rpc Append(stream AppendData) returns(AppendDone) {}
     rpc Explain(ExplainRequest) returns(ExplainResponse) {}
     rpc UserAuth(UserAuthRequest) returns(UserAuthResponse) {}
@@ -22,8 +25,35 @@ service Machbase {
     rpc GetServicePorts(ServicePortsRequest) returns (ServicePorts) {}
 }
 
+message ConnHandle {
+    string handle = 1;
+}
+
+message ConnRequest{
+    string user = 1;
+    string password = 2;
+}
+
+message ConnResponse{
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+    ConnHandle conn = 4;
+}
+
+message ConnCloseRequest{
+    ConnHandle conn = 1;
+}
+
+message ConnCloseResponse{
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
 message PingRequest {
-    int64 token = 1;
+    ConnHandle conn = 1;
+    int64 token = 2;
 }
 
 message PingResponse {
@@ -34,23 +64,34 @@ message PingResponse {
 }
 
 message AppenderRequest {
-    string tableName = 1;
-    string timeformat = 2;
+    ConnHandle conn = 1;
+    string tableName = 2;
+    string timeformat = 3;
 }
 
 message AppenderResponse {
     bool success = 1;
     string reason = 2;
     string elapse = 3;
-    string handle = 4;
+    AppenderHandle handle = 4;
     string tableName = 5;
     int32 tableType = 6;
 }
 
-message AppendData {
+message AppenderCloseResponse {
+    bool success = 1;
+    string reason = 2;
+    string elapse = 3;
+}
+
+message AppenderHandle {
     string handle = 1;
-    repeated google.protobuf.Any params = 2;
-    repeated AppendRecord records = 3;
+    ConnHandle conn = 2;
+}
+
+message AppendData {
+    AppenderHandle handle = 1;
+    repeated AppendRecord records = 2;
 }
 
 message AppendRecord {
@@ -83,8 +124,9 @@ message AppendDone {
 }
 
 message ExplainRequest {
-    string sql = 1;
-    bool full = 2;
+    ConnHandle conn = 1;
+    string sql = 2;
+    bool full = 3;
 }
 
 message ExplainResponse {
@@ -95,8 +137,9 @@ message ExplainResponse {
 }
 
 message ExecRequest {
-    string sql = 1;
-    repeated google.protobuf.Any params = 2;
+    ConnHandle conn = 1;
+    string sql = 2;
+    repeated google.protobuf.Any params = 3;
 }
 
 message ExecResponse {
@@ -108,8 +151,9 @@ message ExecResponse {
 }
 
 message QueryRowRequest {
-    string sql = 1;
-    repeated google.protobuf.Any params = 2;
+    ConnHandle conn = 1;
+    string sql = 2;
+    repeated google.protobuf.Any params = 3;
 }
 
 message QueryRowResponse {
@@ -122,8 +166,9 @@ message QueryRowResponse {
 }
 
 message QueryRequest {
-    string sql = 1;
-    repeated google.protobuf.Any params = 2;
+    ConnHandle conn = 1;
+    string sql = 2;
+    repeated google.protobuf.Any params = 3;
 }
 
 message QueryResponse {
@@ -150,6 +195,7 @@ message Column {
 
 message RowsHandle {
     string handle = 1;
+    ConnHandle conn = 2;
 }
 
 message RowsFetchResponse {
@@ -178,8 +224,8 @@ message UserAuthResponse {
 }
 
 message ServerInfoRequest {
-    bool inflights = 1;
-    bool postflights = 2;
+    bool inflights = 2;
+    bool postflights = 3;
 }
 
 message ServerInfo {

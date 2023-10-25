@@ -300,15 +300,6 @@ func (ms *MockServer) Appender(ctx context.Context, req *machrpc.AppenderRequest
 	}, nil
 }
 
-func (ms *MockServer) AppenderClose(ctx context.Context, req *machrpc.AppenderHandle) (*machrpc.AppenderCloseResponse, error) {
-	_, ok := ms.appenders[req.Handle]
-	if !ok {
-		return &machrpc.AppenderCloseResponse{Success: false, Reason: "invalid appender", Elapse: "1ms."}, nil
-	}
-	delete(ms.appenders, req.Handle)
-	return &machrpc.AppenderCloseResponse{Success: true, Reason: "success", Elapse: "1ms."}, nil
-}
-
 func (ms *MockServer) Append(stream machrpc.Machbase_AppendServer) error {
 	tick := time.Now()
 	successCount := int64(0)

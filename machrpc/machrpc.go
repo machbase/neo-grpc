@@ -692,14 +692,11 @@ func (appender *Appender) Close() (int64, int64, error) {
 	appender.appendClient = nil
 
 	done, err := client.CloseAndRecv()
-	if err != nil {
+	if done != nil {
+		return done.SuccessCount, done.FailCount, err
+	} else {
 		return 0, 0, err
 	}
-	rsp, err := appender.client.cli.AppenderClose(appender.ctx, appender.handle)
-	if !rsp.Success {
-		err = fmt.Errorf("appender close error; %s", rsp.Reason)
-	}
-	return done.SuccessCount, done.FailCount, err
 }
 
 func (appender *Appender) TableName() string {

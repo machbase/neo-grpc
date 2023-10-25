@@ -29,7 +29,6 @@ const (
 	Machbase_RowsFetch_FullMethodName       = "/machrpc.Machbase/RowsFetch"
 	Machbase_RowsClose_FullMethodName       = "/machrpc.Machbase/RowsClose"
 	Machbase_Appender_FullMethodName        = "/machrpc.Machbase/Appender"
-	Machbase_AppenderClose_FullMethodName   = "/machrpc.Machbase/AppenderClose"
 	Machbase_Append_FullMethodName          = "/machrpc.Machbase/Append"
 	Machbase_Explain_FullMethodName         = "/machrpc.Machbase/Explain"
 	Machbase_UserAuth_FullMethodName        = "/machrpc.Machbase/UserAuth"
@@ -51,7 +50,6 @@ type MachbaseClient interface {
 	RowsFetch(ctx context.Context, in *RowsHandle, opts ...grpc.CallOption) (*RowsFetchResponse, error)
 	RowsClose(ctx context.Context, in *RowsHandle, opts ...grpc.CallOption) (*RowsCloseResponse, error)
 	Appender(ctx context.Context, in *AppenderRequest, opts ...grpc.CallOption) (*AppenderResponse, error)
-	AppenderClose(ctx context.Context, in *AppenderHandle, opts ...grpc.CallOption) (*AppenderCloseResponse, error)
 	Append(ctx context.Context, opts ...grpc.CallOption) (Machbase_AppendClient, error)
 	Explain(ctx context.Context, in *ExplainRequest, opts ...grpc.CallOption) (*ExplainResponse, error)
 	UserAuth(ctx context.Context, in *UserAuthRequest, opts ...grpc.CallOption) (*UserAuthResponse, error)
@@ -157,15 +155,6 @@ func (c *machbaseClient) Appender(ctx context.Context, in *AppenderRequest, opts
 	return out, nil
 }
 
-func (c *machbaseClient) AppenderClose(ctx context.Context, in *AppenderHandle, opts ...grpc.CallOption) (*AppenderCloseResponse, error) {
-	out := new(AppenderCloseResponse)
-	err := c.cc.Invoke(ctx, Machbase_AppenderClose_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *machbaseClient) Append(ctx context.Context, opts ...grpc.CallOption) (Machbase_AppendClient, error) {
 	stream, err := c.cc.NewStream(ctx, &Machbase_ServiceDesc.Streams[0], Machbase_Append_FullMethodName, opts...)
 	if err != nil {
@@ -250,7 +239,6 @@ type MachbaseServer interface {
 	RowsFetch(context.Context, *RowsHandle) (*RowsFetchResponse, error)
 	RowsClose(context.Context, *RowsHandle) (*RowsCloseResponse, error)
 	Appender(context.Context, *AppenderRequest) (*AppenderResponse, error)
-	AppenderClose(context.Context, *AppenderHandle) (*AppenderCloseResponse, error)
 	Append(Machbase_AppendServer) error
 	Explain(context.Context, *ExplainRequest) (*ExplainResponse, error)
 	UserAuth(context.Context, *UserAuthRequest) (*UserAuthResponse, error)
@@ -292,9 +280,6 @@ func (UnimplementedMachbaseServer) RowsClose(context.Context, *RowsHandle) (*Row
 }
 func (UnimplementedMachbaseServer) Appender(context.Context, *AppenderRequest) (*AppenderResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Appender not implemented")
-}
-func (UnimplementedMachbaseServer) AppenderClose(context.Context, *AppenderHandle) (*AppenderCloseResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AppenderClose not implemented")
 }
 func (UnimplementedMachbaseServer) Append(Machbase_AppendServer) error {
 	return status.Errorf(codes.Unimplemented, "method Append not implemented")
@@ -504,24 +489,6 @@ func _Machbase_Appender_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Machbase_AppenderClose_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AppenderHandle)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(MachbaseServer).AppenderClose(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: Machbase_AppenderClose_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MachbaseServer).AppenderClose(ctx, req.(*AppenderHandle))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _Machbase_Append_Handler(srv interface{}, stream grpc.ServerStream) error {
 	return srv.(MachbaseServer).Append(&machbaseAppendServer{stream})
 }
@@ -666,10 +633,6 @@ var Machbase_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Appender",
 			Handler:    _Machbase_Appender_Handler,
-		},
-		{
-			MethodName: "AppenderClose",
-			Handler:    _Machbase_AppenderClose_Handler,
 		},
 		{
 			MethodName: "Explain",

@@ -616,22 +616,22 @@ func scan(src []any, dst []any) error {
 //	app, _ := client.Appender(ctx, "MYTABLE")
 //	defer app.Close()
 //	app.Append("name", time.Now(), 3.14)
-func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...spi.AppendOption) (spi.Appender, error) {
-	timeformat := "ns"
+func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...spi.AppenderOption) (spi.Appender, error) {
+
+	ap := &Appender{
+		ctx:             ctx,
+		timeformat:      "ns",
+		bufferThreshold: 400,
+	}
 
 	for _, opt := range opts {
-		switch v := opt.(type) {
-		default:
-			timeformat = "ns"
-		case spi.AppendTimeformatOption:
-			timeformat = string(v)
-		}
+		opt(ap)
 	}
 
 	openRsp, err := conn.client.cli.Appender(ctx, &AppenderRequest{
 		Conn:       conn.handle,
 		TableName:  tableName,
-		Timeformat: timeformat,
+		Timeformat: ap.timeformat,
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "Appender")
@@ -646,14 +646,12 @@ func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...
 		return nil, errors.Wrap(err, "AppendClient")
 	}
 
-	ap := &Appender{
-		ctx:          ctx,
-		client:       conn.client,
-		appendClient: appendClient,
-		tableName:    openRsp.TableName,
-		tableType:    spi.TableType(openRsp.TableType),
-		handle:       openRsp.Handle,
-	}
+	ap.client = conn.client
+	ap.appendClient = appendClient
+	ap.tableName = openRsp.TableName
+	ap.tableType = spi.TableType(openRsp.TableType)
+	ap.handle = openRsp.Handle
+
 	ap.bufferTicker = time.NewTicker(time.Second)
 	go func() {
 		for range ap.bufferTicker.C {
@@ -664,6 +662,22 @@ func (conn *ClientConn) Appender(ctx context.Context, tableName string, opts ...
 	return ap, nil
 }
 
+func AppenderTimeformat(timeformat string) spi.AppenderOption {
+	return func(a spi.Appender) {
+		if apd, ok := a.(*Appender); ok {
+			apd.timeformat = timeformat
+		}
+	}
+}
+
+func AppenderBufferThreshold(threshold int) spi.AppenderOption {
+	return func(a spi.Appender) {
+		if apd, ok := a.(*Appender); ok {
+			apd.bufferThreshold = threshold
+		}
+	}
+}
+
 type Appender struct {
 	ctx          context.Context
 	client       *Client
@@ -671,10 +685,13 @@ type Appender struct {
 	tableName    string
 	tableType    spi.TableType
 	handle       *AppenderHandle
+	timeformat   string
 
 	buffer       []*AppendRecord
 	bufferLock   sync.Mutex
 	bufferTicker *time.Ticker
+
+	bufferThreshold int
 }
 
 // Close releases all resources that allocated to the Appender
@@ -743,7 +760,7 @@ func (appender *Appender) flush(rec *AppendRecord) error {
 		return nil
 	}
 
-	if rec != nil && len(appender.buffer) < 400 {
+	if rec != nil && len(appender.buffer) < appender.bufferThreshold {
 		// write new record, but not enough to flush to network
 		return nil
 	}

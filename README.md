@@ -20,8 +20,12 @@ import "github.com/machbase/neo-grpc/machrpc"
 ```
 
 ```go
-cli := machrpc.NewClient(machrpc.ClientOption{machrpc.QueryTimeout(5 * time.Second)})
-if err := cli.Connect("127.0.0.1:5655"); err != nil {
+cli := machrpc.NewClient(
+        machrpc.WithServer("127.0.0.1:5655"),
+        machrpc.WithCertificate("/path/to/client_key.pem", "/path/to/client_cert.pem", "/path/to/server_cert.pem"),
+        machrpc.WithQueryTimeout(5 * time.Second)
+    )
+if err := cli.Connect(); err != nil {
     panic(err)
 }
 defer cli.Disconnect()

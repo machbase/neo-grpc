@@ -24,22 +24,42 @@ func ConvertAnyToPb(params []any) ([]*anypb.Any, error) {
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
 		case int:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
+		case *uint:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(*v)))
+		case uint:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(v)))
 		case *int8:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
 		case int8:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
+		case *uint8:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(*v)))
+		case uint8:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(v)))
 		case *int16:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(*v)))
 		case int16:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(int32(v)))
+		case *uint16:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(*v)))
+		case uint16:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(uint32(v)))
 		case *int32:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(*v))
 		case int32:
 			pbparams[i], err = anypb.New(wrapperspb.Int32(v))
+		case *uint32:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(*v))
+		case uint32:
+			pbparams[i], err = anypb.New(wrapperspb.UInt32(v))
 		case *int64:
 			pbparams[i], err = anypb.New(wrapperspb.Int64(*v))
 		case int64:
 			pbparams[i], err = anypb.New(wrapperspb.Int64(v))
+		case *uint64:
+			pbparams[i], err = anypb.New(wrapperspb.UInt64(*v))
+		case uint64:
+			pbparams[i], err = anypb.New(wrapperspb.UInt64(v))
 		case *float32:
 			pbparams[i], err = anypb.New(wrapperspb.Float(*v))
 		case float32:

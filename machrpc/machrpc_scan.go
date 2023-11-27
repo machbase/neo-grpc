@@ -80,12 +80,20 @@ func ScanInt64(v int64, c any) error {
 	switch cv := c.(type) {
 	case *int:
 		*cv = int(v)
+	case *uint:
+		*cv = uint(v)
 	case *int16:
 		*cv = int16(v)
+	case *uint16:
+		*cv = uint16(v)
 	case *int32:
 		*cv = int32(v)
+	case *uint32:
+		*cv = uint32(v)
 	case *int64:
 		*cv = int64(v)
+	case *uint64:
+		*cv = uint64(v)
 	case *string:
 		*cv = strconv.Itoa(int(v))
 	case *time.Time:

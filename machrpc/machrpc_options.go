@@ -1,6 +1,10 @@
 package machrpc
 
-import "time"
+import (
+	"time"
+
+	spi "github.com/machbase/neo-spi"
+)
 
 type Option func(*Client)
 
@@ -33,5 +37,14 @@ func WithCloseTimeout(timeout time.Duration) Option {
 func WithAppendTimeout(timeout time.Duration) Option {
 	return func(c *Client) {
 		c.appendTimeout = timeout
+	}
+}
+
+func WithPassword(username string, password string) spi.ConnectOption {
+	return func(c spi.Conn) {
+		if conn, ok := c.(*ClientConn); ok {
+			conn.dbUser = username
+			conn.dbPassword = password
+		}
 	}
 }

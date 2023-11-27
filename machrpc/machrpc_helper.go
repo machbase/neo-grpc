@@ -27,10 +27,7 @@ func MakeGrpcTlsConn(addr string, keyPath string, certPath string, caCertPath st
 		return nil, fmt.Errorf("fail to load server CA cert")
 	}
 
-	dir := filepath.Dir(caCertPath)
-	keyFile := filepath.Join(dir, "machbase_key.pem")
-
-	tlsCert, err := tls.LoadX509KeyPair(caCertPath, keyFile)
+	tlsCert, err := tls.LoadX509KeyPair(certPath, keyPath)
 	if err != nil {
 		return nil, err
 	}

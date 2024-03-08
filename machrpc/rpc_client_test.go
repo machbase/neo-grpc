@@ -29,7 +29,6 @@ func newClient(t *testing.T) spi.DatabaseClient {
 	opts := []machrpc.Option{
 		machrpc.WithServer(mock.MockServerAddr),
 		machrpc.WithQueryTimeout(3 * time.Second),
-		machrpc.WithCloseTimeout(3 * time.Second),
 		machrpc.WithAppendTimeout(3 * time.Second),
 	}
 	cli, err := machrpc.NewClient(opts...)

@@ -28,12 +28,6 @@ func WithQueryTimeout(timeout time.Duration) Option {
 	}
 }
 
-func WithCloseTimeout(timeout time.Duration) Option {
-	return func(c *Client) {
-		c.closeTimeout = timeout
-	}
-}
-
 func WithAppendTimeout(timeout time.Duration) Option {
 	return func(c *Client) {
 		c.appendTimeout = timeout

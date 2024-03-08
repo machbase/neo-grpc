@@ -30,7 +30,6 @@ type Client struct {
 	serverCert    string
 	certPath      string
 	keyPath       string
-	closeTimeout  time.Duration
 	queryTimeout  time.Duration
 	appendTimeout time.Duration
 
@@ -44,7 +43,6 @@ var _ spi.DatabaseAux = &Client{}
 // NewClient creates new instance of Client.
 func NewClient(opts ...Option) (spi.DatabaseClient, error) {
 	client := &Client{
-		closeTimeout:  3 * time.Second,
 		queryTimeout:  0,
 		appendTimeout: 3 * time.Second,
 	}
@@ -374,15 +372,7 @@ type Rows struct {
 func (rows *Rows) Close() error {
 	var err error
 	rows.closeOnce.Do(func() {
-		var ctx context.Context
-		if rows.client.closeTimeout > 0 {
-			ctx0, cancelFunc := context.WithTimeout(context.Background(), rows.client.closeTimeout)
-			defer cancelFunc()
-			ctx = ctx0
-		} else {
-			ctx = context.Background()
-		}
-		_, err = rows.client.cli.RowsClose(ctx, rows.handle)
+		_, err = rows.client.cli.RowsClose(rows.ctx, rows.handle)
 	})
 	return err
 }

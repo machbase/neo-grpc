@@ -1,3 +1,6 @@
+# This repo is archived.(readonly)
+
+Moved to [machbase/neo-client](https://github.com/machbase/neo-client)
 
 # neo-grpc
 
